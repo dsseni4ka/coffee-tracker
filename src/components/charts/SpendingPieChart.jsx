@@ -2,7 +2,16 @@ import { useMemo } from 'react'
 import DrinkSticker from '../DrinkSticker'
 import { formatPrice } from '../../utils/format'
 
-const CHART_COLORS = ['#c5a880', '#d97706', '#10b981', '#b45309', '#8b6f47', '#a78bfa', '#38bdf8', '#f472b6']
+const CHART_COLORS = [
+  'var(--color-accent)',
+  'var(--color-accent-muted)',
+  'var(--color-success)',
+  'var(--color-warning)',
+  'color-mix(in srgb, var(--color-accent) 65%, var(--color-text))',
+  'var(--color-accent-soft)',
+  'var(--color-link)',
+  'var(--color-danger)',
+]
 
 function polarToCartesian(cx, cy, r, angleDeg) {
   const rad = ((angleDeg - 90) * Math.PI) / 180

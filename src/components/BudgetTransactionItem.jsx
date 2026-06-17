@@ -14,7 +14,15 @@ function drinkLabel(drink) {
   return match?.name ?? getDrinkType(drink.drinkType)?.label ?? drink.drinkType
 }
 
-export default function BudgetTransactionItem({ log }) {
+function TrashIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+    </svg>
+  )
+}
+
+export default function BudgetTransactionItem({ log, editing = false, onDelete }) {
   return (
     <div className="sipspend-log-item">
       <div className="sipspend-log-left">
@@ -35,6 +43,20 @@ export default function BudgetTransactionItem({ log }) {
       </div>
       <div className="sipspend-log-right">
         <span className="sipspend-log-price">−{formatPrice(log.price ?? 0)}</span>
+        {editing && onDelete && (
+          <button
+            type="button"
+            className="sipspend-log-remove"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation()
+              onDelete(log.id)
+            }}
+            aria-label={`Delete ${drinkLabel(log)}`}
+          >
+            <TrashIcon />
+          </button>
+        )}
       </div>
     </div>
   )

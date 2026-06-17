@@ -8,7 +8,7 @@ import {
   startOfWeek,
   subWeeks,
 } from 'date-fns'
-import { getAllDrinks } from '../db/database'
+import { deleteDrink, getAllDrinks } from '../db/database'
 import { useBudget } from '../hooks/useBudget'
 import { formatPrice } from '../utils/format'
 import { getWeeklyBudgetMetrics } from '../utils/weeklyBudget'
@@ -155,6 +155,11 @@ export default function BudgetPage() {
     setWeekOffset((offset) => Math.max(0, offset - 1))
   }
 
+  async function handleDeleteTransaction(id) {
+    await deleteDrink(id)
+    await load()
+  }
+
   return (
     <div className="budget-page">
       <header className="calendar-hero budget-header">
@@ -189,6 +194,7 @@ export default function BudgetPage() {
       <BudgetRecentTransactions
         transactions={weekTransactions}
         weekRangeLabel={weekRangeLabel}
+        onDeleteTransaction={handleDeleteTransaction}
       />
 
       <div className="segmented">

@@ -4,8 +4,12 @@ import BudgetTransactionsSheet from './BudgetTransactionsSheet'
 
 const PREVIEW_COUNT = 4
 
-export default function BudgetRecentTransactions({ transactions, weekRangeLabel }) {
+export default function BudgetRecentTransactions({ transactions, weekRangeLabel, onDeleteTransaction }) {
   const [sheetOpen, setSheetOpen] = useState(false)
+
+  function closeSheet() {
+    setSheetOpen(false)
+  }
   const preview = transactions.slice(0, PREVIEW_COUNT)
   const hasMore = transactions.length > PREVIEW_COUNT
 
@@ -49,7 +53,8 @@ export default function BudgetRecentTransactions({ transactions, weekRangeLabel 
         <BudgetTransactionsSheet
           title={`Transactions · ${weekRangeLabel}`}
           transactions={transactions}
-          onClose={() => setSheetOpen(false)}
+          onClose={closeSheet}
+          onDeleteTransaction={onDeleteTransaction}
         />
       )}
     </>

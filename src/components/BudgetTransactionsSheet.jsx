@@ -5,10 +5,16 @@ import BudgetTransactionItem from './BudgetTransactionItem'
 const DISMISS_THRESHOLD = 36
 const VELOCITY_THRESHOLD = 0.35
 const TAP_THRESHOLD = 8
+const INTERACTIVE_SELECTOR = 'button, a, input, textarea, select, label, [role="button"]'
 
-export default function BudgetTransactionsSheet({ title, transactions, onClose }) {
+function isInteractiveTarget(target) {
+  return target instanceof Element && target.closest(INTERACTIVE_SELECTOR)
+}
+
+export default function BudgetTransactionsSheet({ title, transactions, onClose, onDeleteTransaction }) {
   const [sheetOffset, setSheetOffset] = useState(0)
   const [sheetDragging, setSheetDragging] = useState(false)
+  const [editing, setEditing] = useState(false)
   const bodyRef = useRef(null)
   const dragStartY = useRef(0)
   const dragY = useRef(0)
@@ -100,6 +106,7 @@ export default function BudgetTransactionsSheet({ title, transactions, onClose }
   }
 
   function onBodyPointerDown(e) {
+    if (editing || isInteractiveTarget(e.target)) return
     if (bodyRef.current?.scrollTop > 0) return
     beginSheetDrag(e.clientY, true)
     e.currentTarget.setPointerCapture(e.pointerId)
@@ -139,10 +146,23 @@ export default function BudgetTransactionsSheet({ title, transactions, onClose }
           onPointerCancel={onDragZonePointerUp}
         >
           <span className="sheet-handle" aria-hidden />
-          <header className="sheet-toolbar budget-transactions-toolbar">
-            <h2 className="sheet-toolbar-title">{title}</h2>
-          </header>
         </button>
+
+        <header className="sheet-toolbar budget-transactions-toolbar">
+          <span className="add-coffee-text-btn add-coffee-text-btn--spacer" aria-hidden />
+          <h2 className="sheet-toolbar-title">{title}</h2>
+          {transactions.length > 0 && onDeleteTransaction ? (
+            <button
+              type="button"
+              className="add-coffee-text-btn add-coffee-text-btn--primary"
+              onClick={() => setEditing((value) => !value)}
+            >
+              {editing ? 'Done' : 'Edit'}
+            </button>
+          ) : (
+            <span className="add-coffee-text-btn add-coffee-text-btn--spacer" aria-hidden />
+          )}
+        </header>
 
         <div
           ref={bodyRef}
@@ -157,7 +177,12 @@ export default function BudgetTransactionsSheet({ title, transactions, onClose }
           ) : (
             <div className="budget-transactions-sheet-list">
               {transactions.map((log) => (
-                <BudgetTransactionItem key={log.id} log={log} />
+                <BudgetTransactionItem
+                  key={log.id}
+                  log={log}
+                  editing={editing}
+                  onDelete={onDeleteTransaction}
+                />
               ))}
             </div>
           )}

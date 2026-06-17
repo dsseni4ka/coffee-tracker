@@ -32,7 +32,7 @@ export default function CalendarHomePage() {
   const [showLog, setShowLog] = useState(false)
   const [sipRefresh, setSipRefresh] = useState(0)
   const [landingDrink, setLandingDrink] = useState(null)
-  const touchStartX = useRef(null)
+  const [monthNavDir, setMonthNavDir] = useState(null)
   const weeklyCollageRef = useRef(null)
   const dayCollageRef = useRef(null)
   const selectedDayRef = useRef(null)
@@ -126,16 +126,26 @@ export default function CalendarHomePage() {
 
   const viewingCurrentMonth = isSameMonth(month, today)
 
+  function monthDirection(from, to) {
+    if (isSameMonth(from, to)) return null
+    return to > from ? 'from-next' : 'from-prev'
+  }
+
   function goToPrevMonth() {
+    setMonthNavDir('from-prev')
     setMonth((m) => subMonths(m, 1))
   }
 
   function goToNextMonth() {
+    setMonthNavDir('from-next')
     setMonth((m) => addMonths(m, 1))
   }
 
   function goToToday() {
-    setMonth(startOfMonth(today))
+    const nextMonth = startOfMonth(today)
+    const dir = monthDirection(month, nextMonth)
+    if (dir) setMonthNavDir(dir)
+    setMonth(nextMonth)
     setSelected(today)
     setDayFocused(false)
   }
@@ -144,20 +154,11 @@ export default function CalendarHomePage() {
     setSelected(day)
     setDayFocused(true)
     if (!isSameMonth(day, month)) {
-      setMonth(startOfMonth(day))
+      const nextMonth = startOfMonth(day)
+      const dir = monthDirection(month, nextMonth)
+      if (dir) setMonthNavDir(dir)
+      setMonth(nextMonth)
     }
-  }
-
-  function handleTouchStart(e) {
-    touchStartX.current = e.touches[0].clientX
-  }
-
-  function handleTouchEnd(e) {
-    if (touchStartX.current == null) return
-    const dx = e.changedTouches[0].clientX - touchStartX.current
-    touchStartX.current = null
-    if (dx > 56) setMonth((m) => subMonths(m, 1))
-    if (dx < -56) setMonth((m) => addMonths(m, 1))
   }
 
   return (
@@ -173,9 +174,15 @@ export default function CalendarHomePage() {
             <ChevronLeftIcon size="sm" />
           </button>
 
-          <div className="calendar-month-label">
-            <h1>{format(month, 'MMMM yyyy')}</h1>
-            <p>{format(selected, 'EEE, MMM d, yyyy')}</p>
+          <div className="calendar-month-label" aria-live="polite">
+            <div
+              key={format(month, 'yyyy-MM')}
+              className={`calendar-month-label-inner${monthNavDir ? ` calendar-month-label-inner--${monthNavDir}` : ''}`}
+              onAnimationEnd={() => setMonthNavDir(null)}
+            >
+              <h1>{format(month, 'MMMM yyyy')}</h1>
+              <p>{format(selected, 'EEE, MMM d, yyyy')}</p>
+            </div>
           </div>
 
           <button
@@ -195,11 +202,7 @@ export default function CalendarHomePage() {
         )}
       </header>
 
-      <div
-        className="calendar-panel"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
+      <div className="calendar-panel">
         <div className="calendar-grid">
           {WEEKDAYS.map((d) => (
             <div key={d} className="calendar-weekday">{d}</div>

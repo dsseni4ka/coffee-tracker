@@ -145,7 +145,7 @@
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: #a3a3a3;
+  color: var(--color-text-tertiary);
   font-weight: 700;
 }
 
@@ -153,7 +153,7 @@
   margin: 0;
   font-size: 1.25rem;
   font-weight: 700;
-  color: #262626;
+  color: var(--color-text);
 }
 
 .sipspend-close {
@@ -161,7 +161,7 @@
   background: none;
   border: none;
   font-size: 0.75rem;
-  color: #737373;
+  color: var(--color-text-secondary);
   padding: 0;
   margin-bottom: 2px;
   cursor: pointer;
@@ -171,18 +171,18 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #efece6;
+  background: var(--color-tag-bg);
   padding: 6px 12px;
   border-radius: 9999px;
   font-size: 11px;
-  color: #525252;
+  color: var(--color-tag-text);
   border: none;
   cursor: pointer;
   transition: background 0.3s, transform 0.15s, opacity 0.15s;
 }
 
 .sipspend-location-badge:hover {
-  background: #e5e1d8;
+  background: var(--color-tag-bg);
 }
 
 .sipspend-location-badge.pressed {
@@ -200,7 +200,7 @@
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: #f59e0b;
+  background: var(--color-warning);
   opacity: 0.75;
   animation: sipspend-ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
@@ -211,7 +211,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #d97706;
+  background: var(--color-accent-muted);
 }
 
 @keyframes sipspend-ping {
@@ -235,15 +235,15 @@
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #a3a3a3;
+  color: var(--color-text-tertiary);
   font-weight: 700;
 }
 
 .sipspend-carousel-indicator {
   font-size: 10px;
-  color: #d97706;
+  color: var(--color-tag-text);
   font-weight: 600;
-  background: #fffbeb;
+  background: var(--color-tag-bg);
   padding: 2px 8px;
   border-radius: 9999px;
 }
@@ -441,7 +441,7 @@
   font-size: 8px;
   font-weight: 700;
   line-height: 1.2;
-  color: #262626;
+  color: var(--color-text);
   text-align: center;
 }
 
@@ -455,17 +455,17 @@
   margin: -12px 0 0;
   font-size: 8px;
   font-weight: 600;
-  color: #b45309;
-  background: #fffbeb;
+  color: var(--color-tag-text);
+  background: var(--color-tag-bg);
   padding: 1px 6px;
-  border-radius: 5px;
+  border-radius: var(--radius-full);
   white-space: nowrap;
   box-sizing: border-box;
 }
 
 .sipspend-dial-hint {
   font-size: 10px;
-  color: #737373;
+  color: var(--color-text-secondary);
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -475,7 +475,7 @@
 .sipspend-dial-hint svg {
   width: 10px;
   height: 10px;
-  color: #d97706;
+  color: var(--color-accent-muted);
   animation: sipspend-pulse 2s ease-in-out infinite;
 }
 
@@ -485,10 +485,10 @@
 }
 
 .sipspend-price-box {
-  background: white;
+  background: var(--color-surface);
   border-radius: 24px;
   padding: 16px;
-  border: 1px solid #f5f5f5;
+  border: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -507,12 +507,12 @@
 .sipspend-price-btn {
   width: 40px;
   height: 40px;
-  background: #fafafa;
-  border: 1px solid #e5e5e5;
+  background: var(--color-surface-soft);
+  border: 1px solid var(--color-border-strong);
   border-radius: 50%;
   font-size: 1.125rem;
   font-weight: 700;
-  color: #404040;
+  color: var(--color-text);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -533,14 +533,14 @@
 .sipspend-price-display .currency {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #a3a3a3;
+  color: var(--color-text-tertiary);
 }
 
 .sipspend-price-display .amount {
   font-size: 1.575rem;
   font-weight: 900;
   letter-spacing: -0.02em;
-  color: #262626;
+  color: var(--color-text);
   min-width: 70px;
   text-align: center;
 }
@@ -605,10 +605,10 @@
   position: relative;
   width: 100%;
   height: 56px;
-  background: #fafafa;
+  background: var(--color-surface-soft);
   border-radius: 16px;
   overflow: hidden;
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--color-border-strong);
   display: flex;
   align-items: center;
   cursor: ew-resize;
@@ -620,7 +620,7 @@
   top: 0;
   bottom: 0;
   width: 2px;
-  background: #c5a880;
+  background: var(--color-accent);
   z-index: 2;
   transform: translateX(-50%);
   pointer-events: none;
@@ -635,7 +635,7 @@
   transform: translateX(-50%);
   width: 10px;
   height: 10px;
-  background: #c5a880;
+  background: var(--color-accent);
   border-radius: 50%;
 }
 
@@ -682,23 +682,23 @@
 
 .sipspend-ruler-tick .tick.minor {
   height: 12px;
-  background: #d4d4d4;
+  background: var(--color-disabled);
 }
 
 .sipspend-ruler-tick .tick.half {
   height: 18px;
-  background: #737373;
+  background: var(--color-text-secondary);
 }
 
 .sipspend-ruler-tick .tick.major {
   height: 24px;
-  background: #262626;
+  background: var(--color-text);
 }
 
 .sipspend-ruler-tick .tick-label {
   font-size: 9px;
   font-weight: 700;
-  color: #a3a3a3;
+  color: var(--color-text-tertiary);
   margin-top: 4px;
   user-select: none;
   pointer-events: none;
@@ -731,7 +731,7 @@
 }
 
 .sipspend-log-btn:hover {
-  background: #3d342e;
+  background: var(--color-btn);
 }
 
 .sipspend-log-btn:active {
@@ -746,7 +746,7 @@
 .sipspend-log-btn svg {
   width: 16px;
   height: 16px;
-  color: #c5a880;
+  color: var(--color-accent);
 }
 
 .sipspend-footer {
@@ -809,10 +809,10 @@
 }
 
 .sipspend-budget-card {
-  background: white;
+  background: var(--color-surface);
   border-radius: 20px;
   padding: 16px;
-  border: 1px solid #f5f5f5;
+  border: 1px solid var(--color-border);
   box-shadow: 0 4px 20px -2px rgba(197, 168, 128, 0.15);
   margin-top: 10px;
 }
@@ -826,7 +826,7 @@
 
 .sipspend-budget-top span {
   font-size: 10px;
-  color: #a3a3a3;
+  color: var(--color-text-tertiary);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -843,13 +843,13 @@
 .sipspend-spent .currency {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #262626;
+  color: var(--color-text);
 }
 
 .sipspend-spent .amount {
   font-size: 1.875rem;
   font-weight: 800;
-  color: #262626;
+  color: var(--color-text);
   letter-spacing: -0.02em;
   display: inline-flex;
   align-items: baseline;
@@ -864,13 +864,13 @@
   text-align: right;
   font-size: 12px;
   font-weight: 600;
-  color: #525252;
+  color: var(--color-text-secondary);
 }
 
 .sipspend-progress-track {
   width: 100%;
   height: 8px;
-  background: #f5f5f5;
+  background: var(--color-border);
   border-radius: 9999px;
   overflow: hidden;
 }
@@ -881,9 +881,9 @@
   transition: width 0.5s ease-out, background 0.3s;
 }
 
-.sipspend-progress-fill.safe { background: #10b981; }
-.sipspend-progress-fill.warn { background: #f59e0b; }
-.sipspend-progress-fill.danger { background: #ef4444; }
+.sipspend-progress-fill.safe { background: var(--color-success); }
+.sipspend-progress-fill.warn { background: var(--color-warning); }
+.sipspend-progress-fill.danger { background: var(--color-danger); }
 
 .sipspend-budget-footer {
   display: flex;
@@ -897,13 +897,13 @@
   font-weight: 500;
 }
 
-.sipspend-budget-alert.safe { color: #059669; }
-.sipspend-budget-alert.warn { color: #f59e0b; font-weight: 600; }
-.sipspend-budget-alert.danger { color: #ef4444; font-weight: 600; }
+.sipspend-budget-alert.safe { color: var(--color-success); }
+.sipspend-budget-alert.warn { color: var(--color-warning); font-weight: 600; }
+.sipspend-budget-alert.danger { color: var(--color-danger); font-weight: 600; }
 
 .sipspend-percent {
   font-size: 11px;
-  color: #a3a3a3;
+  color: var(--color-text-tertiary);
   font-weight: 500;
 }
 
@@ -919,7 +919,7 @@
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #a3a3a3;
+  color: var(--color-text-tertiary);
   font-weight: 700;
 }
 
@@ -927,7 +927,7 @@
   background: none;
   border: none;
   font-size: 10px;
-  color: #ef4444;
+  color: var(--color-danger);
   cursor: pointer;
   padding: 0;
 }
@@ -954,8 +954,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: white;
-  border: 1px solid #f5f5f5;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   padding: 8px 14px;
   border-radius: 16px;
 }
@@ -970,11 +970,11 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #faf8f5;
+  background: var(--color-bg);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #b45309;
+  color: var(--color-accent-muted);
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -996,12 +996,12 @@
   margin: 0;
   font-size: 12px;
   font-weight: 700;
-  color: #262626;
+  color: var(--color-text);
 }
 
 .sipspend-log-meta {
   font-size: 9px;
-  color: #a3a3a3;
+  color: var(--color-text-tertiary);
   display: block;
 }
 
@@ -1014,20 +1014,20 @@
 .sipspend-log-price {
   font-size: 12px;
   font-weight: 800;
-  color: #262626;
+  color: var(--color-text);
 }
 
 .sipspend-log-remove {
   background: none;
   border: none;
-  color: #d4d4d4;
+  color: var(--color-disabled);
   padding: 4px;
   cursor: pointer;
   display: flex;
 }
 
 .sipspend-log-remove:hover {
-  color: #ef4444;
+  color: var(--color-danger);
 }
 
 .sipspend-log-remove svg {
@@ -1041,9 +1041,9 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  color: #a3a3a3;
-  background: white;
-  border: 1px solid #f5f5f5;
+  color: var(--color-text-tertiary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 16px;
   padding: 12px;
   font-size: 12px;
@@ -1054,8 +1054,8 @@
   bottom: calc(var(--nav-height) + var(--nav-float-gap) + var(--safe-bottom) + 24px);
   left: 50%;
   transform: translateX(-50%) translateY(8px);
-  background: #171717;
-  color: white;
+  background: var(--color-btn);
+  color: var(--color-on-accent);
   font-size: 12px;
   font-weight: 600;
   padding: 12px 16px;
@@ -1076,7 +1076,7 @@
 }
 
 .sipspend-toast-check {
-  background: #10b981;
+  background: var(--color-success);
   border-radius: 50%;
   padding: 4px;
   display: flex;
@@ -1141,7 +1141,7 @@
 .sipspend-sheet-handle {
   width: 36px;
   height: 4px;
-  background: #d4d4d4;
+  background: var(--color-disabled);
   border-radius: 9999px;
   pointer-events: none;
 }
@@ -1149,10 +1149,10 @@
 /* Size slider */
 
 .sipspend-size-box {
-  background: white;
+  background: var(--color-surface);
   border-radius: 24px;
   padding: 16px;
-  border: 1px solid #f5f5f5;
+  border: 1px solid var(--color-border);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   overflow: visible;
 }
@@ -1239,7 +1239,7 @@
   margin-top: 0;
   font-size: 1.125rem;
   font-weight: 800;
-  color: #262626;
+  color: var(--color-text);
   letter-spacing: -0.02em;
 }
 
@@ -1248,7 +1248,7 @@
   margin-top: 4px;
   font-size: 10px;
   font-weight: 600;
-  color: #a3a3a3;
+  color: var(--color-text-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -1271,7 +1271,7 @@
   right: 12px;
   top: var(--size-track-line-top);
   height: var(--size-track-height);
-  background: #f5f5f5;
+  background: var(--color-border);
   border-radius: 9999px;
   overflow: hidden;
   pointer-events: none;
@@ -1279,7 +1279,7 @@
 
 .sipspend-size-track-fill {
   height: 100%;
-  background: linear-gradient(90deg, #e8dcc8, #c5a880);
+  background: linear-gradient(90deg, var(--color-gradient-accent-start), var(--color-accent));
   border-radius: 9999px;
   transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -1303,7 +1303,7 @@
 }
 
 .sipspend-size-range:focus-visible::-webkit-slider-thumb {
-  outline: 2px solid #d97706;
+  outline: 2px solid var(--color-accent-muted);
   outline-offset: 2px;
 }
 
@@ -1313,8 +1313,8 @@
   height: var(--size-thumb-size);
   margin-top: calc((var(--size-track-height) - var(--size-thumb-size)) / 2);
   border-radius: 50%;
-  background: #2c2520;
-  border: 3px solid #faf8f5;
+  background: var(--color-btn);
+  border: 3px solid var(--color-bg);
   box-shadow: 0 2px 10px rgba(44, 37, 32, 0.35);
   cursor: grab;
   transition: transform 0.2s;
@@ -1329,8 +1329,8 @@
   width: var(--size-thumb-size);
   height: var(--size-thumb-size);
   border-radius: 50%;
-  background: #2c2520;
-  border: 3px solid #faf8f5;
+  background: var(--color-btn);
+  border: 3px solid var(--color-bg);
   box-shadow: 0 2px 10px rgba(44, 37, 32, 0.35);
   cursor: grab;
 }
@@ -1371,33 +1371,33 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #d4d4d4;
+  background: var(--color-disabled);
   transition: background 0.25s, transform 0.25s;
 }
 
 .sipspend-size-tick.active .sipspend-size-tick-dot {
-  background: #c5a880;
+  background: var(--color-accent);
   transform: scale(1.35);
 }
 
 .sipspend-size-tick-label {
   font-size: 10px;
   font-weight: 700;
-  color: #a3a3a3;
+  color: var(--color-text-tertiary);
   transition: color 0.25s;
 }
 
 .sipspend-size-tick.active .sipspend-size-tick-label {
-  color: #b45309;
+  color: var(--color-accent-muted);
 }
 
 /* Location picker */
 
 .sipspend-location-box {
-  background: white;
+  background: var(--color-surface);
   border-radius: 24px;
   padding: 14px;
-  border: 1px solid #f5f5f5;
+  border: 1px solid var(--color-border);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
@@ -1422,36 +1422,36 @@
   gap: 6px;
   padding: 8px 12px;
   border-radius: 9999px;
-  border: 1px solid #e5e5e5;
-  background: #fafafa;
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface-soft);
   font-size: 11px;
   font-weight: 600;
-  color: #525252;
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
 }
 
 .sipspend-location-chip:hover {
-  background: #f5f5f5;
-  border-color: #d4d4d4;
+  background: var(--color-border);
+  border-color: var(--color-disabled);
 }
 
 .sipspend-location-chip.active {
-  background: #fffbeb;
-  border-color: #c5a880;
-  color: #92400e;
+  background: var(--color-tag-bg);
+  border-color: var(--color-tag-border);
+  color: var(--color-tag-text);
 }
 
 .sipspend-location-chip-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #d4d4d4;
+  background: var(--color-disabled);
 }
 
 .sipspend-location-chip.active .sipspend-location-chip-dot {
-  background: #d97706;
+  background: var(--color-accent-muted);
 }
 
 .sipspend-location-search .cafe-search {
@@ -1459,8 +1459,8 @@
 }
 
 .sipspend-location-search .add-coffee-row-card {
-  background: #fafafa;
-  border: 1px solid #e5e5e5;
+  background: var(--color-surface-soft);
+  border: 1px solid var(--color-border-strong);
   border-radius: 16px;
   margin: 0;
 }
@@ -1473,7 +1473,7 @@
 .sipspend-location-search .cafe-search-results {
   margin-top: 6px;
   border-radius: 16px;
-  border: 1px solid #f5f5f5;
+  border: 1px solid var(--color-border);
   overflow: hidden;
 }
 
@@ -1513,8 +1513,8 @@
   width: 36px;
   height: 36px;
   border-radius: 9999px;
-  background: white;
-  color: #d97706;
+  background: var(--color-surface);
+  color: var(--color-accent-muted);
   font-size: 20px;
   font-weight: 300;
   line-height: 1;
@@ -1541,7 +1541,7 @@
 .sipspend-carousel-action-label {
   font-size: 8px;
   font-weight: 700;
-  color: #737373;
+  color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -1588,16 +1588,16 @@
   justify-content: center;
   aspect-ratio: 1;
   padding: 6px;
-  border: 2px solid #f0f0f0;
+  border: 2px solid var(--color-border);
   border-radius: 16px;
-  background: white;
+  background: var(--color-surface);
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .sipspend-sticker-option.selected {
-  border-color: #d97706;
-  background: #fffbeb;
+  border-color: var(--color-tag-text);
+  background: var(--color-tag-bg);
 }
 
 .sipspend-sticker-option .sipspend-drink-sticker {
@@ -1607,14 +1607,14 @@
 
 .sipspend-sticker-option--add {
   border-style: dashed;
-  border-color: #e5e5e5;
-  background: #fafafa;
-  color: #d97706;
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-soft);
+  color: var(--color-accent-muted);
 }
 
 .sipspend-sticker-option--add:hover {
-  border-color: #d97706;
-  background: #fffbeb;
+  border-color: var(--color-tag-text);
+  background: var(--color-tag-bg);
 }
 
 .sipspend-sticker-option--add svg {
@@ -1630,7 +1630,7 @@
   margin: 0 0 var(--space-md);
   font-size: 0.82rem;
   line-height: 1.45;
-  color: #737373;
+  color: var(--color-text-secondary);
 }
 
 .sipspend-edit-list {
@@ -1648,8 +1648,8 @@
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
-  background: white;
-  border: 1px solid #f0f0f0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 16px;
   position: relative;
   will-change: transform;
@@ -1693,15 +1693,15 @@
   border: none;
   border-radius: 10px;
   background: transparent;
-  color: #a3a3a3;
+  color: var(--color-text-tertiary);
   cursor: grab;
   touch-action: none;
 }
 
 .sipspend-edit-list-drag-handle:active {
   cursor: grabbing;
-  color: #737373;
-  background: #f5f5f5;
+  color: var(--color-text-secondary);
+  background: var(--color-border);
 }
 
 .sipspend-edit-list-row--hidden {
@@ -1733,7 +1733,7 @@
 .sipspend-edit-list-name {
   font-size: 0.88rem;
   font-weight: 600;
-  color: #262626;
+  color: var(--color-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1743,10 +1743,10 @@
   flex-shrink: 0;
   min-width: 52px;
   padding: 5px 8px;
-  border: 1px solid #fde68a;
+  border: 1px solid var(--color-tag-border);
   border-radius: 10px;
-  background: #fffbeb;
-  color: #b45309;
+  background: var(--color-tag-bg);
+  color: var(--color-tag-text);
   font-size: 0.72rem;
   font-weight: 700;
   font-family: var(--font-mono);
@@ -1755,8 +1755,8 @@
 }
 
 .sipspend-edit-list-price-btn:hover {
-  background: #fef3c7;
-  border-color: #fcd34d;
+  background: color-mix(in srgb, var(--color-tag-bg) 75%, var(--color-tag-text));
+  border-color: var(--color-tag-border);
 }
 
 .sipspend-edit-list-price-btn:active {
@@ -1766,7 +1766,7 @@
 .sipspend-edit-list-price {
   font-size: 0.72rem;
   font-weight: 600;
-  color: #b45309;
+  color: var(--color-tag-text);
 }
 
 .sipspend-edit-list-actions {
@@ -1785,13 +1785,13 @@
   padding: 0;
   border: none;
   border-radius: 10px;
-  background: #f5f5f5;
-  color: #525252;
+  background: var(--color-border);
+  color: var(--color-text-secondary);
   cursor: pointer;
 }
 
 .sipspend-edit-list-btn:hover:not(:disabled) {
-  background: #ebebeb;
+  background: var(--color-border-strong);
 }
 
 .sipspend-edit-list-btn:disabled {
@@ -1800,10 +1800,10 @@
 }
 
 .sipspend-edit-list-btn--danger {
-  color: #dc2626;
+  color: var(--color-danger);
 }
 
 .sipspend-edit-list-btn--danger:hover:not(:disabled) {
-  background: #fef2f2;
+  background: var(--color-danger-soft);
 }
 

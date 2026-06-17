@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useUsername } from './useUsername'
 
 const BIO_KEY = 'coffee-tracker-bio'
@@ -17,6 +17,16 @@ export function useProfile() {
   const [bio, setBioState] = useState(() => readStorage(BIO_KEY))
   const [photo, setPhotoState] = useState(() => readStorage(PHOTO_KEY))
 
+  useEffect(() => {
+    function syncPhotoFromStorage(event) {
+      if (event && event.key !== PHOTO_KEY) return
+      setPhotoState(readStorage(PHOTO_KEY))
+    }
+
+    window.addEventListener('storage', syncPhotoFromStorage)
+    return () => window.removeEventListener('storage', syncPhotoFromStorage)
+  }, [])
+
   const setBio = useCallback((value) => {
     const trimmed = value.trim()
     setBioState(trimmed)
@@ -33,7 +43,7 @@ export function useProfile() {
       if (value) localStorage.setItem(PHOTO_KEY, value)
       else localStorage.removeItem(PHOTO_KEY)
     } catch {
-      /* ignore */
+      /* keep in-memory value for this session even if persistence fails */
     }
   }, [])
 
@@ -56,4 +66,8 @@ export function useProfile() {
 
 export function getStoredBio() {
   return readStorage(BIO_KEY)
+}
+
+export function getStoredProfilePhoto() {
+  return readStorage(PHOTO_KEY)
 }

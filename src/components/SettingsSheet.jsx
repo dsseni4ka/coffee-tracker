@@ -1,16 +1,50 @@
+import { useRef, useState } from 'react'
 import PhoneLinkCard from './PhoneLinkCard'
 import UsernameLabel from './UsernameLabel'
-import { useProfile } from '../hooks/useProfile'
 import { useTheme } from '../hooks/useTheme'
+import { isProfilePhotoFile, prepareProfilePhoto } from '../utils/profilePhoto'
 
 const THEMES = [
   { id: 'light', label: 'Light' },
   { id: 'dark', label: 'Dark' },
+  { id: 'matcha', label: 'Matcha latte' },
 ]
 
-export default function SettingsSheet({ onClose }) {
-  const { username, setUsername } = useProfile()
+const MAX_PHOTO_BYTES = 12 * 1024 * 1024
+
+export default function SettingsSheet({
+  onClose,
+  photo,
+  setPhoto,
+  username,
+  setUsername,
+}) {
   const [theme, setTheme] = useTheme()
+  const [photoError, setPhotoError] = useState('')
+  const photoFileRef = useRef(null)
+  const initial = (username?.trim()?.[0] ?? 'G').toUpperCase()
+
+  async function handlePhotoChange(e) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    setPhotoError('')
+
+    if (!isProfilePhotoFile(file)) {
+      setPhotoError('Please choose an image file.')
+      return
+    }
+    if (file.size > MAX_PHOTO_BYTES) {
+      setPhotoError('Image is too large. Try a smaller photo.')
+      return
+    }
+
+    try {
+      const dataUrl = await prepareProfilePhoto(file)
+      setPhoto(dataUrl)
+    } catch {
+      setPhotoError('Could not use that photo. Try another image.')
+    }
+  }
 
   return (
     <div className="sheet-overlay" onClick={onClose} role="presentation">
@@ -33,12 +67,36 @@ export default function SettingsSheet({ onClose }) {
         <div className="add-coffee-body settings-sheet-body">
           <label className="add-coffee-field-label">Profile</label>
           <div className="settings-profile-card">
-            <span className="settings-profile-avatar" aria-hidden>
-              {(username?.trim()?.[0] ?? 'G').toUpperCase()}
-            </span>
+            <button
+              type="button"
+              className="settings-profile-avatar-btn"
+              onClick={() => photoFileRef.current?.click()}
+              aria-label={photo ? 'Change profile photo' : 'Add profile photo'}
+            >
+              {photo ? (
+                <img src={photo} alt="" className="settings-profile-avatar-img" />
+              ) : (
+                <span className="settings-profile-avatar-initial" aria-hidden>
+                  {initial}
+                </span>
+              )}
+              <span className="settings-profile-avatar-plus" aria-hidden>
+                <svg fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+              </span>
+            </button>
+            <input
+              ref={photoFileRef}
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoChange}
+              hidden
+            />
             <div className="settings-profile-copy">
               <span className="settings-profile-label">Display name</span>
               <UsernameLabel username={username} onSave={setUsername} />
+              {photoError && <p className="settings-profile-photo-error">{photoError}</p>}
             </div>
           </div>
 
