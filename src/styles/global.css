@@ -227,6 +227,10 @@ a {
   opacity: 0.38;
 }
 
+.calendar-day.this-week {
+  background: var(--color-accent-soft);
+}
+
 .calendar-day.today,
 .calendar-day.selected {
   border-color: var(--color-accent);
@@ -306,10 +310,106 @@ a {
   min-height: 108px;
 }
 
+.home-summary-card-shell {
+  position: relative;
+  overflow: hidden;
+}
+
+.home-summary-card-panel {
+  animation: home-summary-enter 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes home-summary-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .week-summary-card {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.day-summary-card {
+  min-height: 149px;
+}
+
+.day-summary-date {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
+}
+
+.day-summary-empty {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.day-summary-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.day-summary-drinks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.day-summary-drink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  font-size: 0.78rem;
+}
+
+.day-summary-drink-name {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.day-summary-drink-time {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--color-text-tertiary);
+}
+
+.day-summary-back {
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 0;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-accent-muted);
+  background: none;
+  border: none;
+}
+
+.day-summary-back:hover {
+  color: var(--color-accent);
 }
 
 .week-budget-header {
@@ -488,8 +588,32 @@ a {
   transition: background 0.15s, transform 0.15s;
 }
 
+.add-cup-btn-text {
+  display: inline-block;
+  animation: add-cup-label-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes add-cup-label-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .add-cup-btn:active {
   transform: scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-summary-card-panel,
+  .add-cup-btn-text {
+    animation: none;
+  }
 }
 
 /* ── Profile username ── */

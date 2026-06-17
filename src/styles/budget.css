@@ -6,6 +6,423 @@
   margin: 0 auto;
 }
 
+/* ── Header ── */
+
+.budget-header {
+  margin-bottom: var(--space-md);
+}
+
+.budget-page-title {
+  margin-bottom: 6px;
+}
+
+.budget-status-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.budget-status-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.budget-status-line.danger .budget-status-text {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.budget-status-line.warn .budget-status-text {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.budget-status-line.safe .budget-status-text {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.budget-status-sep,
+.budget-status-range {
+  color: var(--color-text-tertiary);
+}
+
+/* ── Circular gauge ── */
+
+.budget-gauge {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 260px;
+  margin: 0 auto var(--space-lg);
+  aspect-ratio: 1;
+}
+
+.budget-gauge-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.budget-gauge-track {
+  stroke: var(--color-border-strong);
+  opacity: 0.55;
+}
+
+.budget-gauge-fill {
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.budget-gauge-fill.safe {
+  stroke: var(--color-success);
+}
+
+.budget-gauge-fill.warn {
+  stroke: #f59e0b;
+}
+
+.budget-gauge-fill.danger {
+  stroke: var(--color-danger);
+  opacity: 0;
+}
+
+.budget-gauge-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 var(--space-lg);
+}
+
+.budget-gauge-label {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
+}
+
+.budget-gauge-amount {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  color: var(--color-text);
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px;
+}
+
+.budget-gauge-amount .currency {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.budget-gauge-amount .tally-amount {
+  font: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  color: inherit;
+}
+
+.budget-gauge-meta {
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: var(--color-text-tertiary);
+}
+
+/* ── Summary card ── */
+
+.budget-summary-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  padding: var(--space-md);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border);
+  margin-bottom: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+}
+
+.budget-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: 12px 4px;
+}
+
+.budget-summary-row + .budget-summary-row {
+  border-top: 1px solid var(--color-border);
+}
+
+.budget-summary-row-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.budget-summary-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-soft);
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.budget-summary-label {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.budget-summary-sublabel {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--color-text-tertiary);
+  margin-top: 2px;
+}
+
+.budget-summary-budget-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-accent-muted);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s ease;
+}
+
+.budget-summary-budget-value:active {
+  background: var(--color-accent-soft);
+}
+
+.budget-summary-value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text);
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.budget-summary-value--spent {
+  font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1px;
+}
+
+.budget-summary-value--tally {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1px;
+}
+
+.budget-summary-value .currency {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.budget-summary-value .tally-amount {
+  font: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  color: inherit;
+}
+
+.budget-summary-value--muted {
+  color: var(--color-text-secondary);
+}
+
+.budget-summary-value-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.budget-summary-overspent {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-danger);
+}
+
+/* ── Recent transactions ── */
+
+.budget-recent {
+  margin-bottom: var(--space-lg);
+}
+
+.budget-recent-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-sm);
+}
+
+.budget-recent-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.budget-recent-view-all {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-accent-muted);
+  padding: 4px 2px;
+}
+
+.budget-recent-view-all:active {
+  opacity: 0.7;
+}
+
+.budget-recent-list {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  padding: 4px var(--space-md);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border);
+}
+
+.budget-recent-list .budget-transaction-item {
+  padding: 12px 0;
+}
+
+.budget-recent-list .budget-transaction-item + .budget-transaction-item {
+  border-top: 1px solid var(--color-border);
+}
+
+.budget-recent-empty {
+  padding: var(--space-lg) var(--space-md);
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--color-text-tertiary);
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border);
+}
+
+.budget-recent-more {
+  display: block;
+  width: 100%;
+  padding: 10px 0 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  border-top: 1px solid var(--color-border);
+  text-align: center;
+}
+
+.budget-recent-more:active {
+  color: var(--color-accent-muted);
+}
+
+.budget-transactions-sheet {
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.budget-transactions-sheet-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: var(--space-md);
+}
+
+.budget-transactions-sheet-list {
+  max-height: none;
+}
+
+.budget-transactions-overlay .sheet {
+  animation: budget-transactions-slide-up 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes budget-transactions-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Monthly panel ── */
+
+.budget-monthly-panel {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border);
+  margin-bottom: var(--space-lg);
+}
+
+.budget-section-title {
+  margin: 0 0 var(--space-md);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.budget-monthly-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.budget-monthly-stat {
+  background: var(--color-surface-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.budget-monthly-stat-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-tertiary);
+}
+
+.budget-monthly-stat-value {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.budget-monthly-stat-value.danger {
+  color: var(--color-danger);
+}
+
 .budget-summary-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -626,6 +1043,3 @@
   height: 160px;
 }
 
-.budget-transactions .sipspend-logs {
-  max-height: none;
-}

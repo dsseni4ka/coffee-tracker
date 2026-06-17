@@ -1,18 +1,69 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { SIZE_OPTIONS, getSizeOption } from '../../data/cupOptions'
 
 const SIZE_SHORT = ['S', 'M', 'L', 'XL']
+const STICKER_BASE_PX = 64
+const MIN_SCALE = 0.5
+const MAX_SCALE = 1.2
+
+function preserveSheetScroll(run) {
+  const body = document.querySelector('.sipspend-body')
+  const top = body?.scrollTop ?? 0
+  run()
+  requestAnimationFrame(() => {
+    if (body) body.scrollTop = top
+    requestAnimationFrame(() => {
+      if (body) body.scrollTop = top
+    })
+  })
+}
+
+function useSheetScrollLock() {
+  const lockRef = useRef(null)
+
+  const unlock = useCallback(() => {
+    if (!lockRef.current) return
+    lockRef.current.el.removeEventListener('scroll', lockRef.current.fix)
+    window.removeEventListener('pointerup', lockRef.current.onUp)
+    window.removeEventListener('pointercancel', lockRef.current.onUp)
+    lockRef.current = null
+  }, [])
+
+  const lock = useCallback(() => {
+    const el = document.querySelector('.sipspend-body')
+    if (!el) return
+
+    unlock()
+
+    const top = el.scrollTop
+    const fix = () => {
+      el.scrollTop = top
+    }
+    const onUp = () => {
+      window.setTimeout(unlock, 320)
+    }
+
+    el.addEventListener('scroll', fix, { passive: true })
+    window.addEventListener('pointerup', onUp)
+    window.addEventListener('pointercancel', onUp)
+    lockRef.current = { el, fix, onUp }
+  }, [unlock])
+
+  useEffect(() => () => unlock(), [unlock])
+
+  return { lock }
+}
 
 export default function SizeSlider({ value, onChange, drinkSticker }) {
   const index = Math.max(0, SIZE_OPTIONS.findIndex((s) => s.id === value))
   const selected = getSizeOption(value) ?? SIZE_OPTIONS[1]
   const fillPercent = (index / (SIZE_OPTIONS.length - 1)) * 100
-  const MIN_SCALE = 0.5
-  const MAX_SCALE = 1.2
   const sizeScale =
     MIN_SCALE + (index / (SIZE_OPTIONS.length - 1)) * (MAX_SCALE - MIN_SCALE)
+  const stickerSize = STICKER_BASE_PX * sizeScale
   const [drinkSettling, setDrinkSettling] = useState(false)
   const prevSticker = useRef(drinkSticker)
+  const { lock } = useSheetScrollLock()
 
   useEffect(() => {
     if (prevSticker.current === drinkSticker) return
@@ -23,32 +74,33 @@ export default function SizeSlider({ value, onChange, drinkSticker }) {
   }, [drinkSticker])
 
   function handleChange(e) {
-    const nextIndex = Number(e.target.value)
-    onChange(SIZE_OPTIONS[nextIndex].id)
+    preserveSheetScroll(() => onChange(SIZE_OPTIONS[Number(e.target.value)].id))
   }
 
   function selectSize(sizeId) {
-    onChange(sizeId)
+    preserveSheetScroll(() => onChange(sizeId))
   }
 
   return (
-    <div className="sipspend-size-box">
+    <div className="sipspend-size-box" onPointerDown={lock}>
       <div className="sipspend-size-hero">
         <div className="sipspend-size-visual" aria-hidden>
-          <div
-            className="sipspend-size-cup"
-            style={{ transform: `scale(${sizeScale})` }}
-          >
+          <div className="sipspend-size-stage">
             <div
-              className={`sipspend-size-sticker-wrap${drinkSettling ? ' sipspend-size-sticker-wrap--settle' : ''}`}
+              className="sipspend-size-cup"
+              style={{ '--sticker-size': `${stickerSize}px` }}
             >
-              <img
-                key={drinkSticker}
-                src={drinkSticker}
-                alt=""
-                className="sipspend-size-sticker"
-                draggable={false}
-              />
+              <div
+                className={`sipspend-size-sticker-wrap${drinkSettling ? ' sipspend-size-sticker-wrap--settle' : ''}`}
+              >
+                <img
+                  key={drinkSticker}
+                  src={drinkSticker}
+                  alt=""
+                  className="sipspend-size-sticker"
+                  draggable={false}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -76,15 +128,17 @@ export default function SizeSlider({ value, onChange, drinkSticker }) {
         />
         <div className="sipspend-size-ticks" aria-hidden>
           {SIZE_OPTIONS.map((size, i) => (
-            <button
+            <div
               key={size.id}
-              type="button"
+              role="button"
+              tabIndex={-1}
               className={`sipspend-size-tick${i === index ? ' active' : ''}`}
+              onPointerDown={(e) => e.preventDefault()}
               onClick={() => selectSize(size.id)}
             >
               <span className="sipspend-size-tick-dot" />
               <span className="sipspend-size-tick-label">{SIZE_SHORT[i]}</span>
-            </button>
+            </div>
           ))}
         </div>
       </div>

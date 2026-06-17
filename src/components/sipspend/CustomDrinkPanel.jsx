@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { DRINK_STICKER_OPTIONS, PRICE_RULER } from '../../data/sipSpendDrinks'
 import { formatPrice } from '../../utils/format'
 import { CupStickerImage } from './CoffeeCupSvgs'
 import TallyAmount from './TallyAmount'
+import PriceRuler from './PriceRuler'
 
 const { start: START_PRICE, end: END_PRICE } = PRICE_RULER
 
@@ -10,6 +11,7 @@ export default function CustomDrinkPanel({ onBack, onSave }) {
   const [name, setName] = useState('')
   const [price, setPrice] = useState(4.5)
   const [sticker, setSticker] = useState(DRINK_STICKER_OPTIONS[0].src)
+  const rulerRef = useRef(null)
 
   const trimmedName = name.trim()
   const canSave = trimmedName.length > 0 && price >= START_PRICE && price <= END_PRICE
@@ -17,6 +19,7 @@ export default function CustomDrinkPanel({ onBack, onSave }) {
   function adjustPrice(delta) {
     const next = parseFloat(Math.max(START_PRICE, Math.min(END_PRICE, price + delta)).toFixed(2))
     setPrice(next)
+    rulerRef.current?.scrollToPrice(next)
   }
 
   function handleSave() {
@@ -89,6 +92,7 @@ export default function CustomDrinkPanel({ onBack, onSave }) {
               +
             </button>
           </div>
+          <PriceRuler ref={rulerRef} price={price} onPriceChange={setPrice} />
         </div>
       </div>
 

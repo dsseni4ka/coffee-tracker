@@ -22,23 +22,47 @@ function TallyDigit({ digit }) {
   )
 }
 
-export default function TallyAmount({ value }) {
-  const formatted = formatAmount(value)
+export default function TallyAmount({ value, animateOnMount = false, className = '' }) {
+  const [displayValue, setDisplayValue] = useState(() => (animateOnMount ? 0 : value))
   const [ticking, setTicking] = useState(false)
-  const prevValue = useRef(value)
+  const prevValue = useRef(animateOnMount ? 0 : value)
+  const mountPlayed = useRef(false)
 
   useEffect(() => {
-    if (prevValue.current === value) return
+    if (animateOnMount && !mountPlayed.current) {
+      mountPlayed.current = true
+      const frame = requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          prevValue.current = value
+          setDisplayValue(value)
+          setTicking(true)
+          setTimeout(() => setTicking(false), 420)
+        })
+      })
+      return () => cancelAnimationFrame(frame)
+    }
+
+    if (prevValue.current === value) return undefined
     prevValue.current = value
+    setDisplayValue(value)
     setTicking(true)
     const timer = setTimeout(() => setTicking(false), 420)
     return () => clearTimeout(timer)
-  }, [value])
+  }, [value, animateOnMount])
+
+  const formatted = formatAmount(displayValue)
 
   return (
     <span
-      className={`amount tally-amount${ticking ? ' tally-amount--tick' : ''}`}
-      aria-label={formatted}
+      className={[
+        'amount',
+        'tally-amount',
+        ticking && 'tally-amount--tick',
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      aria-label={formatAmount(value)}
     >
       {formatted.split('').map((char, index) =>
         char === ',' ? (

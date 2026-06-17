@@ -7,6 +7,7 @@ import {
   format,
   isSameDay,
   isSameMonth,
+  isSameWeek,
   startOfMonth,
   startOfWeek,
   subMonths,
@@ -16,7 +17,7 @@ import { getDrinkStickerSrc } from '../data/sipSpendDrinks'
 import { useBudget } from '../hooks/useBudget'
 import { WEEK_OPTIONS, WEEKDAY_LABELS } from '../utils/calendarWeek'
 import QuickLogSheet from '../components/QuickLogSheet'
-import WeeklyBudgetCard from '../components/WeeklyBudgetCard'
+import HomeSummaryCard from '../components/HomeSummaryCard'
 import RecentSipsCard from '../components/RecentSipsCard'
 import { ChevronLeftIcon, ChevronRightIcon } from '../components/icons/NavIcons'
 
@@ -27,11 +28,14 @@ export default function CalendarHomePage() {
   const [month, setMonth] = useState(() => startOfMonth(new Date()))
   const [drinksByDate, setDrinksByDate] = useState({})
   const [selected, setSelected] = useState(new Date())
+  const [dayFocused, setDayFocused] = useState(false)
   const [showLog, setShowLog] = useState(false)
   const [sipRefresh, setSipRefresh] = useState(0)
   const [landingDrink, setLandingDrink] = useState(null)
   const touchStartX = useRef(null)
   const weeklyCollageRef = useRef(null)
+  const dayCollageRef = useRef(null)
+  const selectedDayRef = useRef(null)
 
   const load = useCallback(async () => {
     const all = await getAllDrinks()
@@ -47,6 +51,16 @@ export default function CalendarHomePage() {
   useEffect(() => {
     load()
   }, [load])
+
+  useEffect(() => {
+    if (!dayFocused) return undefined
+
+    const timer = setTimeout(() => {
+      setDayFocused(false)
+    }, 15_000)
+
+    return () => clearTimeout(timer)
+  }, [dayFocused, selected])
 
   const days = useMemo(() => {
     const start = startOfWeek(startOfMonth(month), WEEK_OPTIONS)
@@ -76,13 +90,29 @@ export default function CalendarHomePage() {
     return { totalSpent, collageTypes }
   }, [drinksByDate])
 
+  const selectedDayDrinks = useMemo(() => {
+    const key = toDateKey(selected)
+    return [...(drinksByDate[key] ?? [])].sort((a, b) => a.timestamp - b.timestamp)
+  }, [drinksByDate, selected])
+
   const handleDrinkLanding = useCallback((drinkType) => {
+    if (dayFocused) {
+      load()
+      return
+    }
     const isNew = !weekStats.collageTypes.slice(0, 5).includes(drinkType)
     if (isNew) {
       setLandingDrink({ type: drinkType, isNew: true })
     }
     load()
-  }, [weekStats.collageTypes, load])
+  }, [dayFocused, weekStats.collageTypes, load])
+
+  const logTimestamp = useMemo(() => {
+    if (!dayFocused || isSameDay(selected, today)) return new Date()
+    const loggedAt = new Date(selected)
+    loggedAt.setHours(12, 0, 0, 0)
+    return loggedAt
+  }, [dayFocused, selected, today])
 
   const monthCups = useMemo(() => {
     const monthPrefix = format(month, 'yyyy-MM')
@@ -107,6 +137,15 @@ export default function CalendarHomePage() {
   function goToToday() {
     setMonth(startOfMonth(today))
     setSelected(today)
+    setDayFocused(false)
+  }
+
+  function selectDay(day) {
+    setSelected(day)
+    setDayFocused(true)
+    if (!isSameMonth(day, month)) {
+      setMonth(startOfMonth(day))
+    }
   }
 
   function handleTouchStart(e) {
@@ -171,6 +210,7 @@ export default function CalendarHomePage() {
             const hasDrink = dayDrinks.length > 0
             const isToday = isSameDay(day, today)
             const isSelected = isSameDay(day, selected)
+            const isThisWeek = isSameWeek(day, today, WEEK_OPTIONS)
             const inMonth = isSameMonth(day, month)
             const primaryDrink = dayDrinks[0]
 
@@ -181,18 +221,17 @@ export default function CalendarHomePage() {
                 className={[
                   'calendar-day',
                   !inMonth && 'other-month',
+                  isThisWeek && 'this-week',
                   hasDrink && 'has-drink',
                   isToday && 'today',
                   isSelected && 'selected',
                 ]
                   .filter(Boolean)
                   .join(' ')}
-                onClick={() => {
-                  setSelected(day)
-                  if (!isSameMonth(day, month)) {
-                    setMonth(startOfMonth(day))
-                  }
+                ref={(el) => {
+                  if (isSelected) selectedDayRef.current = el
                 }}
+                onClick={() => selectDay(day)}
               >
                 {!hasDrink && (
                   <span className="calendar-day-num">{format(day, 'd')}</span>
@@ -217,19 +256,26 @@ export default function CalendarHomePage() {
       </div>
 
       <button type="button" className="add-cup-btn" onClick={() => setShowLog(true)}>
-        Add a new cup
+        <span key={dayFocused ? 'focused' : 'default'} className="add-cup-btn-text">
+          {dayFocused ? 'Add cup to that day' : 'Add a new cup'}
+        </span>
       </button>
 
-      <WeeklyBudgetCard
-        totalSpent={weekStats.totalSpent}
-        collageTypes={weekStats.collageTypes}
-        limit={weeklyLimit}
-        collageRef={weeklyCollageRef}
+      <HomeSummaryCard
+        dayFocused={dayFocused}
+        selectedDate={selected}
+        selectedDayDrinks={selectedDayDrinks}
+        weekTotalSpent={weekStats.totalSpent}
+        weekCollageTypes={weekStats.collageTypes}
+        weeklyLimit={weeklyLimit}
+        weeklyCollageRef={weeklyCollageRef}
+        dayCollageRef={dayCollageRef}
         landingDrink={landingDrink}
         onLandingRevealDone={() => setLandingDrink(null)}
+        onBackToWeek={() => setDayFocused(false)}
       />
 
-      <RecentSipsCard refreshKey={sipRefresh} onChanged={load} />
+      <RecentSipsCard refreshKey={sipRefresh} />
 
       <div className="home-card monthly-cups-card">
         <span className="home-card-label">
@@ -243,7 +289,8 @@ export default function CalendarHomePage() {
 
       {showLog && (
         <QuickLogSheet
-          flyTargetRef={weeklyCollageRef}
+          flyTargetRef={dayFocused ? selectedDayRef : weeklyCollageRef}
+          loggedAt={logTimestamp}
           onClose={() => setShowLog(false)}
           onSaved={load}
           onDrinkLanding={handleDrinkLanding}

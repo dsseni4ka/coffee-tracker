@@ -93,6 +93,7 @@
 .sipspend-body {
   flex: 1;
   overflow-y: auto;
+  overflow-anchor: none;
   padding: var(--space-sm) 0 var(--space-sm);
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -946,6 +947,16 @@
   align-items: center;
   justify-content: center;
   color: #b45309;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sipspend-log-icon-sticker {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  object-position: center bottom;
+  pointer-events: none;
 }
 
 .sipspend-log-icon svg {
@@ -1127,42 +1138,48 @@
 }
 
 .sipspend-size-visual {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
   width: 100%;
-  min-height: calc(64px * 1.2 + 8px);
-  padding: 4px 8px 0;
+  padding: 0 8px;
   margin: 0;
+}
+
+.sipspend-size-stage {
+  position: relative;
+  height: calc(64px * 1.2);
+  width: 100%;
   overflow: visible;
 }
 
 .sipspend-size-cup {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
   display: flex;
   align-items: flex-end;
   justify-content: center;
   overflow: visible;
-  transition: transform 0.35s cubic-bezier(0.34, 1.45, 0.64, 1);
-  transform-origin: bottom center;
-  will-change: transform;
 }
 
 .sipspend-size-sticker-wrap {
   position: relative;
-  width: 64px;
-  height: 64px;
+  width: var(--sticker-size, 64px);
+  height: var(--sticker-size, 64px);
   flex-shrink: 0;
   overflow: visible;
+  transition:
+    width 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+    height 0.32s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.sipspend-size-sticker-wrap--settle {
+.sipspend-size-sticker-wrap--settle .sipspend-size-sticker {
   animation: sipspend-sticker-settle 0.52s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .sipspend-size-sticker {
   display: block;
-  width: 64px;
-  height: 64px;
+  width: 100%;
+  height: 100%;
   margin: 0;
   object-fit: contain;
   object-position: center bottom;
@@ -1171,11 +1188,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sipspend-size-cup {
+  .sipspend-size-sticker-wrap {
     transition: none;
   }
 
-  .sipspend-size-sticker-wrap--settle {
+  .sipspend-size-sticker-wrap--settle .sipspend-size-sticker {
     animation: none;
   }
 }
@@ -1184,6 +1201,7 @@
   text-align: center;
   margin-top: 4px;
   margin-bottom: 10px;
+  min-height: 44px;
   position: relative;
   z-index: 1;
 }
@@ -1216,6 +1234,7 @@
   position: relative;
   overflow: visible;
   padding: var(--size-track-shadow-pad) 4px 28px;
+  touch-action: pan-x;
 }
 
 .sipspend-size-track-bg {
@@ -1248,6 +1267,15 @@
   -webkit-appearance: none;
   appearance: none;
   cursor: pointer;
+}
+
+.sipspend-size-range:focus {
+  outline: none;
+}
+
+.sipspend-size-range:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid #d97706;
+  outline-offset: 2px;
 }
 
 .sipspend-size-range::-webkit-slider-thumb {
@@ -1306,6 +1334,8 @@
   border: none;
   padding: 0;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 .sipspend-size-tick-dot {
@@ -1428,7 +1458,7 @@
   flex-shrink: 0;
   width: var(--cup-card-width, 95px);
   min-height: 142px;
-  scroll-snap-align: center;
+  scroll-snap-align: none;
   display: flex;
   flex-direction: column;
   align-items: center;

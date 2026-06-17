@@ -1,17 +1,21 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
+  differenceInCalendarDays,
   eachDayOfInterval,
+  endOfWeek,
   format,
   startOfMonth,
   startOfWeek,
 } from 'date-fns'
 import { getAllDrinks } from '../db/database'
 import { getDrinkType } from '../data/drinkTypes'
-import { SIP_SPEND_DRINKS } from '../data/sipSpendDrinks'
 import { useBudget } from '../hooks/useBudget'
 import { formatPrice } from '../utils/format'
 import { getWeeklyBudgetMetrics } from '../utils/weeklyBudget'
 import { WEEK_OPTIONS } from '../utils/calendarWeek'
+import BudgetGauge from '../components/BudgetGauge'
+import BudgetSummaryCard from '../components/BudgetSummaryCard'
+import BudgetRecentTransactions from '../components/BudgetRecentTransactions'
 import BudgetAmountKeypad from '../components/BudgetAmountKeypad'
 import SpendingLineChart from '../components/charts/SpendingLineChart'
 import SpendingPieChart from '../components/charts/SpendingPieChart'
@@ -23,35 +27,20 @@ const CHART_PERIODS = [
   { id: 'month', label: 'This month' },
 ]
 
-function drinkLabel(drink) {
-  const match = SIP_SPEND_DRINKS.find((d) => d.drinkType === drink.drinkType)
-  return match?.name ?? getDrinkType(drink.drinkType)?.label ?? drink.drinkType
+function formatWeekRange(now) {
+  const start = startOfWeek(now, WEEK_OPTIONS)
+  const end = endOfWeek(now, WEEK_OPTIONS)
+  const sameMonth = start.getMonth() === end.getMonth()
+  if (sameMonth) {
+    return `${format(start, 'd')} – ${format(end, 'd MMM')}`
+  }
+  return `${format(start, 'd MMM')} – ${format(end, 'd MMM')}`
 }
 
-function BudgetPeriodCard({ label, spent, limit }) {
-  const { budgetPercent, budgetState, remaining, budgetAlertText } = getWeeklyBudgetMetrics(spent, limit)
-
-  return (
-    <div className={`budget-period-card${label === 'This week' ? ' budget-period-card--highlight' : ''}`}>
-      <span className="budget-period-label">{label}</span>
-      <div className={`budget-period-remaining ${budgetState}`}>
-        {budgetState === 'danger' ? formatPrice(spent - limit) : formatPrice(remaining)}
-      </div>
-      <p className="budget-period-meta">
-        {budgetState === 'danger' ? 'over budget · ' : 'left · '}
-        <strong>{formatPrice(spent)}</strong> of {formatPrice(limit)}
-      </p>
-      <div className="sipspend-progress-track">
-        <div
-          className={`sipspend-progress-fill ${budgetState}`}
-          style={{ width: `${budgetPercent}%` }}
-        />
-      </div>
-      <span className={`sipspend-budget-alert ${budgetState}`} style={{ fontSize: '0.68rem' }}>
-        {budgetAlertText}
-      </span>
-    </div>
-  )
+function budgetStatusLabel(budgetState) {
+  if (budgetState === 'danger') return 'Overspent'
+  if (budgetState === 'warn') return 'Almost there'
+  return 'On track'
 }
 
 export default function BudgetPage() {
@@ -67,8 +56,9 @@ export default function BudgetPage() {
     load()
   }, [load])
 
-  const weekStart = useMemo(() => startOfWeek(new Date(), WEEK_OPTIONS).getTime(), [])
-  const monthStart = useMemo(() => startOfMonth(new Date()).getTime(), [])
+  const now = useMemo(() => new Date(), [])
+  const weekStart = useMemo(() => startOfWeek(now, WEEK_OPTIONS).getTime(), [now])
+  const monthStart = useMemo(() => startOfMonth(now).getTime(), [now])
 
   const weekDrinks = useMemo(
     () => drinks.filter((d) => d.timestamp >= weekStart),
@@ -90,11 +80,22 @@ export default function BudgetPage() {
     [monthDrinks],
   )
 
+  const weekMetrics = useMemo(
+    () => getWeeklyBudgetMetrics(weekSpent, weeklyLimit),
+    [weekSpent, weeklyLimit],
+  )
+
+  const daysLeftInWeek = useMemo(() => {
+    const end = endOfWeek(now, WEEK_OPTIONS)
+    return Math.max(1, differenceInCalendarDays(end, now) + 1)
+  }, [now])
+
+  const weekRangeLabel = useMemo(() => formatWeekRange(now), [now])
+
   const chartDrinks = chartPeriod === 'week' ? weekDrinks : monthDrinks
   const chartBudgetLimit = chartPeriod === 'week' ? weeklyLimit : monthlyLimit
 
   const lineChartData = useMemo(() => {
-    const now = new Date()
     const days =
       chartPeriod === 'week'
         ? eachDayOfInterval({
@@ -138,7 +139,7 @@ export default function BudgetPage() {
         amount: byDay[key] ?? 0,
       }
     })
-  }, [chartDrinks, chartPeriod])
+  }, [chartDrinks, chartPeriod, now])
 
   const pieSlices = useMemo(() => {
     const byType = {}
@@ -157,32 +158,70 @@ export default function BudgetPage() {
 
   const pieTotal = useMemo(() => pieSlices.reduce((s, slice) => s + slice.amount, 0), [pieSlices])
 
-  const recentTransactions = useMemo(() => {
-    const pool = chartPeriod === 'week' ? weekDrinks : monthDrinks
-    return [...pool].sort((a, b) => b.timestamp - a.timestamp).slice(0, 8)
-  }, [chartPeriod, weekDrinks, monthDrinks])
+  const weekTransactions = useMemo(
+    () => [...weekDrinks].sort((a, b) => b.timestamp - a.timestamp),
+    [weekDrinks],
+  )
 
   const avgDaily = useMemo(() => {
-    const days = chartPeriod === 'week' ? 7 : Math.max(1, new Date().getDate())
+    const days = chartPeriod === 'week' ? 7 : Math.max(1, now.getDate())
     return chartDrinks.reduce((s, d) => s + (d.price ?? 0), 0) / days
-  }, [chartDrinks, chartPeriod])
+  }, [chartDrinks, chartPeriod, now])
 
   return (
     <div className="budget-page">
-      <h1 className="page-title">Budget</h1>
-      <p className="page-subtitle">Track spending and stay on target</p>
+      <header className="budget-header">
+        <h1 className="page-title budget-page-title">Budget</h1>
+        <p className={`budget-status-line ${weekMetrics.budgetState}`}>
+          {weekMetrics.budgetState === 'danger' && (
+            <svg className="budget-status-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+            </svg>
+          )}
+          <span className="budget-status-text">{budgetStatusLabel(weekMetrics.budgetState)}</span>
+          <span className="budget-status-sep">·</span>
+          <span className="budget-status-range">{weekRangeLabel}</span>
+        </p>
+      </header>
 
-      <div className="budget-summary-grid">
-        <BudgetPeriodCard label="This week" spent={weekSpent} limit={weeklyLimit} />
-        <BudgetPeriodCard label="This month" spent={monthSpent} limit={monthlyLimit} />
-      </div>
+      <BudgetGauge
+        remaining={weekMetrics.remaining}
+        limit={weeklyLimit}
+        percentRemaining={weekMetrics.percentRemaining}
+        daysLeft={daysLeftInWeek}
+        budgetState={weekMetrics.budgetState}
+      />
 
-      <div className="budget-limits-panel">
-        <h2 className="budget-limits-title">Set your budget</h2>
-        <div className="budget-limit-rows">
-          <BudgetAmountKeypad label="Weekly" value={weeklyLimit} onChange={setWeeklyLimit} period="weekly" />
-          <BudgetAmountKeypad label="Monthly" value={monthlyLimit} onChange={setMonthlyLimit} period="monthly" />
+      <BudgetSummaryCard
+        weeklyLimit={weeklyLimit}
+        onWeeklyLimitChange={setWeeklyLimit}
+        weekSpent={weekSpent}
+        transactionCount={weekDrinks.length}
+        remaining={weekMetrics.remaining}
+        overBy={weekMetrics.overBy}
+        budgetState={weekMetrics.budgetState}
+      />
+
+      <BudgetRecentTransactions
+        transactions={weekTransactions}
+        weekRangeLabel={weekRangeLabel}
+      />
+
+      <div className="budget-monthly-panel">
+        <h2 className="budget-section-title">Monthly budget</h2>
+        <div className="budget-monthly-stats">
+          <div className="budget-monthly-stat">
+            <span className="budget-monthly-stat-label">Spent</span>
+            <span className="budget-monthly-stat-value">{formatPrice(monthSpent)}</span>
+          </div>
+          <div className="budget-monthly-stat">
+            <span className="budget-monthly-stat-label">Remaining</span>
+            <span className={`budget-monthly-stat-value ${monthSpent > monthlyLimit ? 'danger' : ''}`}>
+              {formatPrice(Math.max(0, monthlyLimit - monthSpent))}
+            </span>
+          </div>
         </div>
+        <BudgetAmountKeypad label="Monthly" value={monthlyLimit} onChange={setMonthlyLimit} period="monthly" />
       </div>
 
       <div className="segmented">
@@ -242,39 +281,6 @@ export default function BudgetPage() {
           total={pieTotal}
           emptyLabel="No priced drinks in this period"
         />
-      </div>
-
-      <div className="panel budget-transactions">
-        <h2 className="panel-title">Recent transactions</h2>
-        <div className="sipspend-logs">
-          {recentTransactions.length === 0 ? (
-            <div className="sipspend-logs-empty">No transactions yet this period.</div>
-          ) : (
-            recentTransactions.map((log) => (
-              <div key={log.id} className="sipspend-log-item">
-                <div className="sipspend-log-left">
-                  <div className="sipspend-log-icon">
-                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M12 3v1m0 16v1m9-9h-1M4 12H3"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="sipspend-log-name">{drinkLabel(log)}</p>
-                    <span className="sipspend-log-meta">
-                      {log.placeName || log.cafeName || 'Unknown'} • {format(new Date(log.timestamp), 'MMM d')}
-                    </span>
-                  </div>
-                </div>
-                <span className="sipspend-log-price">+{formatPrice(log.price ?? 0)}</span>
-              </div>
-            ))
-          )}
-        </div>
       </div>
     </div>
   )

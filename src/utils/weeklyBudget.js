@@ -11,7 +11,9 @@ export function getBudgetMetrics(totalSpent, limit) {
       ? `${formatPrice(overBy)} over budget`
       : `${formatPrice(remaining)} left to spend`
 
-  return { budgetPercent, budgetState, budgetAlertText, limit, remaining }
+  const percentRemaining = Math.max(0, Math.round((remaining / limit) * 100))
+
+  return { budgetPercent, budgetState, budgetAlertText, limit, remaining, overBy, percentRemaining }
 }
 
 export function getWeeklyBudgetMetrics(totalSpent, limit = WEEKLY_BUDGET_LIMIT) {

@@ -53,7 +53,7 @@ export const MOCK_LOCATIONS = [
 export const WEEKLY_BUDGET_LIMIT = 40
 
 export const PRICE_RULER = {
-  start: 1,
+  start: 0.1,
   end: 12,
   interval: 0.05,
   stepWidth: 8,

@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { formatDistanceToNow, startOfWeek } from 'date-fns'
 import { WEEK_OPTIONS } from '../utils/calendarWeek'
-import { SIP_SPEND_DRINKS } from '../data/sipSpendDrinks'
+import { getDrinkStickerSrc, SIP_SPEND_DRINKS } from '../data/sipSpendDrinks'
 import { formatPrice } from '../utils/format'
-import { deleteDrink, deleteDrinks, getDrinksSince } from '../db/database'
+import { getDrinksSince } from '../db/database'
 import '../styles/sipspend.css'
 
 function formatLogTime(timestamp) {
@@ -17,7 +17,7 @@ function drinkLabel(drink) {
   return match?.name ?? drink.drinkType
 }
 
-export default function RecentSipsCard({ refreshKey = 0, onChanged }) {
+export default function RecentSipsCard({ refreshKey = 0 }) {
   const [weekDrinks, setWeekDrinks] = useState([])
   const weekStart = useMemo(() => startOfWeek(new Date(), WEEK_OPTIONS).getTime(), [])
 
@@ -30,28 +30,10 @@ export default function RecentSipsCard({ refreshKey = 0, onChanged }) {
     load()
   }, [load, refreshKey])
 
-  async function removeLog(id) {
-    await deleteDrink(id)
-    await load()
-    onChanged?.()
-  }
-
-  async function clearAll() {
-    if (weekDrinks.length === 0) return
-    await deleteDrinks(weekDrinks.map((d) => d.id))
-    await load()
-    onChanged?.()
-  }
-
   return (
     <div className="home-card recent-sips-card">
       <div className="sipspend-recent-header">
         <span className="sipspend-recent-title">Recent Sips</span>
-        {weekDrinks.length > 0 && (
-          <button type="button" className="sipspend-clear-btn" onClick={clearAll}>
-            Clear all
-          </button>
-        )}
       </div>
 
       <div className="sipspend-logs recent-sips-logs">
@@ -62,14 +44,12 @@ export default function RecentSipsCard({ refreshKey = 0, onChanged }) {
             <div key={log.id} className="sipspend-log-item">
               <div className="sipspend-log-left">
                 <div className="sipspend-log-icon">
-                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 3v1m0 16v1m9-9h-1M4 12H3"
-                    />
-                  </svg>
+                  <img
+                    src={getDrinkStickerSrc(log.drinkType)}
+                    alt=""
+                    className="sipspend-log-icon-sticker"
+                    draggable={false}
+                  />
                 </div>
                 <div>
                   <p className="sipspend-log-name">{drinkLabel(log)}</p>
@@ -79,21 +59,7 @@ export default function RecentSipsCard({ refreshKey = 0, onChanged }) {
                 </div>
               </div>
               <div className="sipspend-log-right">
-                <span className="sipspend-log-price">+{formatPrice(log.price ?? 0)}</span>
-                <button
-                  type="button"
-                  className="sipspend-log-remove"
-                  onClick={() => removeLog(log.id)}
-                  aria-label="Remove log"
-                >
-                  <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862"
-                    />
-                  </svg>
-                </button>
+                <span className="sipspend-log-price">−{formatPrice(log.price ?? 0)}</span>
               </div>
             </div>
           ))

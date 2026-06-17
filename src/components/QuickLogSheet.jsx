@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useImperativeHandle, useRef, useState, forwardRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   MOCK_LOCATIONS,
   PRICE_RULER,
@@ -15,25 +15,11 @@ import CustomDrinkPanel from './sipspend/CustomDrinkPanel'
 import EditDrinkListPanel from './sipspend/EditDrinkListPanel'
 import SizeSlider from './sipspend/SizeSlider'
 import TallyAmount from './sipspend/TallyAmount'
+import PriceRuler from './sipspend/PriceRuler'
 import { animateDrinkToCollage, wait } from '../utils/drinkFlyAnimation'
 import '../styles/sipspend.css'
 
-const { start: START_PRICE, end: END_PRICE, interval: INTERVAL, stepWidth: STEP_WIDTH } = PRICE_RULER
-const TOTAL_STEPS = Math.round((END_PRICE - START_PRICE) / INTERVAL)
-
-function buildRulerTicks() {
-  const ticks = []
-  for (let i = 0; i <= TOTAL_STEPS; i++) {
-    const value = START_PRICE + i * INTERVAL
-    const cents = Math.round(value * 100)
-    const isMajor = cents % 100 === 0
-    const isHalf = cents % 50 === 0 && !isMajor
-    ticks.push({ index: i, value, isMajor, isHalf })
-  }
-  return ticks
-}
-
-const RULER_TICKS = buildRulerTicks()
+const { start: START_PRICE, end: END_PRICE } = PRICE_RULER
 
 const CAROUSEL_GAP = 16
 const CAROUSEL_CENTER_SCALE = 1.3
@@ -41,100 +27,28 @@ const CAROUSEL_EDGE_SCALE = 0.78
 const CAROUSEL_SCROLL_END_MS = 120
 const CAROUSEL_SETTLE_DELAY_MS = 500
 
-const PriceRuler = forwardRef(function PriceRuler({ price, onPriceChange }, ref) {
-  const scrollRef = useRef(null)
-  const isDragging = useRef(false)
-  const dragStart = useRef({ x: 0, scrollLeft: 0 })
-
-  const scrollToPrice = useCallback((targetPrice, smooth = true) => {
-    const el = scrollRef.current
-    if (!el) return
-    const step = Math.round((targetPrice - START_PRICE) / INTERVAL)
-    const clamped = Math.max(0, Math.min(TOTAL_STEPS, step))
-    if (smooth) el.classList.add('smooth')
-    else el.classList.remove('smooth')
-    el.scrollTo({ left: clamped * STEP_WIDTH, behavior: smooth ? 'smooth' : 'auto' })
-  }, [])
-
-  useImperativeHandle(ref, () => ({ scrollToPrice }), [scrollToPrice])
-
-  const readPriceFromScroll = useCallback(() => {
-    const el = scrollRef.current
-    if (!el) return
-    const step = Math.max(0, Math.min(TOTAL_STEPS, Math.round(el.scrollLeft / STEP_WIDTH)))
-    const next = parseFloat((START_PRICE + step * INTERVAL).toFixed(2))
-    if (next !== price) onPriceChange(next)
-  }, [onPriceChange, price])
-
-  useEffect(() => {
-    scrollToPrice(price, false)
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  function snapScroll() {
-    const el = scrollRef.current
-    if (!el) return
-    el.classList.add('smooth')
-    const step = Math.round(el.scrollLeft / STEP_WIDTH)
-    el.scrollTo({ left: step * STEP_WIDTH, behavior: 'smooth' })
+function getCarouselScrollBounds(carousel) {
+  const cards = carousel.querySelectorAll('.sipspend-coffee-card')
+  if (!cards.length) {
+    return { min: 0, max: Math.max(0, carousel.scrollWidth - carousel.clientWidth) }
   }
 
-  function onMouseDown(e) {
-    isDragging.current = true
-    scrollRef.current?.classList.remove('smooth')
-    dragStart.current = {
-      x: e.pageX - (scrollRef.current?.offsetLeft ?? 0),
-      scrollLeft: scrollRef.current?.scrollLeft ?? 0,
-    }
-  }
+  const first = cards[0]
+  const last = cards[cards.length - 1]
+  const halfViewport = carousel.clientWidth / 2
+  const maxScroll = Math.max(0, carousel.scrollWidth - carousel.clientWidth)
 
-  function onMouseMove(e) {
-    if (!isDragging.current || !scrollRef.current) return
-    e.preventDefault()
-    const x = e.pageX - scrollRef.current.offsetLeft
-    const walk = (x - dragStart.current.x) * 1.5
-    scrollRef.current.scrollLeft = dragStart.current.scrollLeft - walk
-  }
+  const min = Math.max(0, first.offsetLeft + first.offsetWidth / 2 - halfViewport)
+  const max = Math.min(maxScroll, last.offsetLeft + last.offsetWidth / 2 - halfViewport)
 
-  function endDrag() {
-    if (!isDragging.current) return
-    isDragging.current = false
-    snapScroll()
-  }
+  return { min, max: Math.max(min, max) }
+}
 
-  return (
-    <div className="sipspend-ruler-wrap">
-      <div className="sipspend-ruler-needle" aria-hidden />
-      <div
-        ref={scrollRef}
-        className="sipspend-ruler-scroll smooth"
-        onScroll={readPriceFromScroll}
-        onMouseDown={onMouseDown}
-        onMouseLeave={endDrag}
-        onMouseUp={endDrag}
-        onMouseMove={onMouseMove}
-        onTouchStart={() => scrollRef.current?.classList.remove('smooth')}
-        onTouchEnd={snapScroll}
-      >
-        {RULER_TICKS.map((tick) => (
-          <div
-            key={tick.index}
-            className="sipspend-ruler-tick"
-            style={{ width: `${STEP_WIDTH}px` }}
-          >
-            <div
-              className={`tick ${tick.isMajor ? 'major' : tick.isHalf ? 'half' : 'minor'}`}
-            />
-            {tick.isMajor ? (
-              <span className="tick-label">€{Math.round(tick.value)}</span>
-            ) : (
-              <span className="tick-spacer">.</span>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-})
+function clampCarouselScroll(carousel) {
+  const { min, max } = getCarouselScrollBounds(carousel)
+  if (carousel.scrollLeft < min) carousel.scrollLeft = min
+  else if (carousel.scrollLeft > max) carousel.scrollLeft = max
+}
 
 function Toast({ message, visible }) {
   return (
@@ -149,7 +63,13 @@ function Toast({ message, visible }) {
   )
 }
 
-export default function QuickLogSheet({ onClose, onSaved, onDrinkLanding, flyTargetRef }) {
+export default function QuickLogSheet({
+  onClose,
+  onSaved,
+  onDrinkLanding,
+  flyTargetRef,
+  loggedAt = new Date(),
+}) {
   const { drinks, visibleDrinks, addCustomDrink, updateDrinkList, resetDrinkList } = useSipSpendDrinks()
   const [sheetView, setSheetView] = useState('log')
   const [selectedIndex, setSelectedIndex] = useState(1)
@@ -391,6 +311,7 @@ export default function QuickLogSheet({ onClose, onSaved, onDrinkLanding, flyTar
 
   const finishCarouselScroll = useCallback(() => {
     const carousel = carouselRef.current
+    if (carousel) clampCarouselScroll(carousel)
     carousel?.classList.remove('sipspend-carousel--scrolling')
     commitCarouselSelection(closestIndexRef.current)
     scheduleCarouselSettleAnimation()
@@ -401,6 +322,7 @@ export default function QuickLogSheet({ onClose, onSaved, onDrinkLanding, flyTar
     if (!carousel) return
 
     function onCarouselScroll() {
+      clampCarouselScroll(carousel)
       carousel.classList.add('sipspend-carousel--scrolling')
       clearCarouselSettleAnimation()
       clearTimeout(carouselScrollEndTimer.current)
@@ -408,21 +330,34 @@ export default function QuickLogSheet({ onClose, onSaved, onDrinkLanding, flyTar
       carouselScrollEndTimer.current = setTimeout(finishCarouselScroll, CAROUSEL_SCROLL_END_MS)
     }
 
+    function onCarouselScrollEnd() {
+      clampCarouselScroll(carousel)
+      updateCarouselMotion()
+    }
+
+    function onResize() {
+      clampCarouselScroll(carousel)
+      updateCarouselMotion()
+    }
+
     carousel.addEventListener('scroll', onCarouselScroll, { passive: true })
-    window.addEventListener('resize', updateCarouselMotion)
+    carousel.addEventListener('scrollend', onCarouselScrollEnd)
+    window.addEventListener('resize', onResize)
     carousel.querySelectorAll('.sipspend-coffee-card')[selectedIndex]?.scrollIntoView({
       inline: 'center',
       block: 'nearest',
     })
+    clampCarouselScroll(carousel)
     updateCarouselMotion()
 
     return () => {
       carousel.removeEventListener('scroll', onCarouselScroll)
-      window.removeEventListener('resize', updateCarouselMotion)
+      carousel.removeEventListener('scrollend', onCarouselScrollEnd)
+      window.removeEventListener('resize', onResize)
       clearTimeout(carouselScrollEndTimer.current)
       clearCarouselSettleAnimation()
     }
-  }, [updateCarouselMotion, clearCarouselSettleAnimation, finishCarouselScroll])
+  }, [updateCarouselMotion, clearCarouselSettleAnimation, finishCarouselScroll, visibleDrinks.length, selectedIndex])
 
   const placeSearchCenter = lat != null && lng != null ? { lat, lng } : searchCenter
   const currentLocationLabel = currentLocationLoading
@@ -493,7 +428,7 @@ export default function QuickLogSheet({ onClose, onSaved, onDrinkLanding, flyTar
       caffeineKnown: true,
       lat,
       lng,
-      loggedAt: new Date(),
+      loggedAt,
     })
 
     if (canAnimate) {
