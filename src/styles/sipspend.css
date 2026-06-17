@@ -830,6 +830,13 @@
   font-weight: 800;
   color: #262626;
   letter-spacing: -0.02em;
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.sipspend-spent .tally-digit,
+.sipspend-spent .tally-sep {
+  display: inline-block;
 }
 
 .sipspend-budget-limit {

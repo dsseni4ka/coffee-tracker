@@ -6,17 +6,19 @@ import {
   format,
   startOfMonth,
   startOfWeek,
+  subWeeks,
 } from 'date-fns'
 import { getAllDrinks } from '../db/database'
 import { getDrinkType } from '../data/drinkTypes'
 import { useBudget } from '../hooks/useBudget'
 import { formatPrice } from '../utils/format'
 import { getWeeklyBudgetMetrics } from '../utils/weeklyBudget'
-import { WEEK_OPTIONS } from '../utils/calendarWeek'
+import { formatWeekRange, WEEK_OPTIONS } from '../utils/calendarWeek'
 import BudgetGauge from '../components/BudgetGauge'
 import BudgetSummaryCard from '../components/BudgetSummaryCard'
 import BudgetRecentTransactions from '../components/BudgetRecentTransactions'
 import BudgetAmountKeypad from '../components/BudgetAmountKeypad'
+import BudgetWeekPicker from '../components/BudgetWeekPicker'
 import SpendingLineChart from '../components/charts/SpendingLineChart'
 import SpendingPieChart from '../components/charts/SpendingPieChart'
 import '../styles/budget.css'
@@ -27,26 +29,11 @@ const CHART_PERIODS = [
   { id: 'month', label: 'This month' },
 ]
 
-function formatWeekRange(now) {
-  const start = startOfWeek(now, WEEK_OPTIONS)
-  const end = endOfWeek(now, WEEK_OPTIONS)
-  const sameMonth = start.getMonth() === end.getMonth()
-  if (sameMonth) {
-    return `${format(start, 'd')} – ${format(end, 'd MMM')}`
-  }
-  return `${format(start, 'd MMM')} – ${format(end, 'd MMM')}`
-}
-
-function budgetStatusLabel(budgetState) {
-  if (budgetState === 'danger') return 'Overspent'
-  if (budgetState === 'warn') return 'Almost there'
-  return 'On track'
-}
-
 export default function BudgetPage() {
   const { weeklyLimit, monthlyLimit, setWeeklyLimit, setMonthlyLimit } = useBudget()
   const [drinks, setDrinks] = useState([])
   const [chartPeriod, setChartPeriod] = useState('week')
+  const [weekOffset, setWeekOffset] = useState(0)
 
   const load = useCallback(async () => {
     setDrinks(await getAllDrinks())
@@ -56,13 +43,25 @@ export default function BudgetPage() {
     load()
   }, [load])
 
-  const now = useMemo(() => new Date(), [])
-  const weekStart = useMemo(() => startOfWeek(now, WEEK_OPTIONS).getTime(), [now])
-  const monthStart = useMemo(() => startOfMonth(now).getTime(), [now])
+  const today = useMemo(() => new Date(), [])
+  const isCurrentWeek = weekOffset === 0
+
+  const selectedWeek = useMemo(
+    () => startOfWeek(subWeeks(today, weekOffset), WEEK_OPTIONS),
+    [today, weekOffset],
+  )
+
+  const weekStart = useMemo(() => selectedWeek.getTime(), [selectedWeek])
+  const weekEnd = useMemo(
+    () => endOfWeek(selectedWeek, WEEK_OPTIONS).getTime(),
+    [selectedWeek],
+  )
+
+  const monthStart = useMemo(() => startOfMonth(today).getTime(), [today])
 
   const weekDrinks = useMemo(
-    () => drinks.filter((d) => d.timestamp >= weekStart),
-    [drinks, weekStart],
+    () => drinks.filter((d) => d.timestamp >= weekStart && d.timestamp <= weekEnd),
+    [drinks, weekStart, weekEnd],
   )
 
   const monthDrinks = useMemo(
@@ -86,11 +85,12 @@ export default function BudgetPage() {
   )
 
   const daysLeftInWeek = useMemo(() => {
-    const end = endOfWeek(now, WEEK_OPTIONS)
-    return Math.max(1, differenceInCalendarDays(end, now) + 1)
-  }, [now])
+    if (!isCurrentWeek) return 0
+    const end = endOfWeek(today, WEEK_OPTIONS)
+    return Math.max(1, differenceInCalendarDays(end, today) + 1)
+  }, [today, isCurrentWeek])
 
-  const weekRangeLabel = useMemo(() => formatWeekRange(now), [now])
+  const weekRangeLabel = useMemo(() => formatWeekRange(selectedWeek), [selectedWeek])
 
   const chartDrinks = chartPeriod === 'week' ? weekDrinks : monthDrinks
   const chartBudgetLimit = chartPeriod === 'week' ? weeklyLimit : monthlyLimit
@@ -99,12 +99,12 @@ export default function BudgetPage() {
     const days =
       chartPeriod === 'week'
         ? eachDayOfInterval({
-            start: startOfWeek(now, WEEK_OPTIONS),
-            end: now,
+            start: selectedWeek,
+            end: isCurrentWeek ? today : endOfWeek(selectedWeek, WEEK_OPTIONS),
           })
         : eachDayOfInterval({
-            start: startOfMonth(now),
-            end: now,
+            start: startOfMonth(today),
+            end: today,
           })
 
     const byDay = {}
@@ -139,7 +139,7 @@ export default function BudgetPage() {
         amount: byDay[key] ?? 0,
       }
     })
-  }, [chartDrinks, chartPeriod, now])
+  }, [chartDrinks, chartPeriod, today, selectedWeek, isCurrentWeek])
 
   const pieSlices = useMemo(() => {
     const byType = {}
@@ -164,24 +164,28 @@ export default function BudgetPage() {
   )
 
   const avgDaily = useMemo(() => {
-    const days = chartPeriod === 'week' ? 7 : Math.max(1, now.getDate())
+    const days = chartPeriod === 'week' ? 7 : Math.max(1, today.getDate())
     return chartDrinks.reduce((s, d) => s + (d.price ?? 0), 0) / days
-  }, [chartDrinks, chartPeriod, now])
+  }, [chartDrinks, chartPeriod, today])
+
+  function goToPreviousWeek() {
+    setWeekOffset((offset) => offset + 1)
+  }
+
+  function goToNextWeek() {
+    setWeekOffset((offset) => Math.max(0, offset - 1))
+  }
 
   return (
     <div className="budget-page">
       <header className="budget-header">
         <h1 className="page-title budget-page-title">Budget</h1>
-        <p className={`budget-status-line ${weekMetrics.budgetState}`}>
-          {weekMetrics.budgetState === 'danger' && (
-            <svg className="budget-status-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
-            </svg>
-          )}
-          <span className="budget-status-text">{budgetStatusLabel(weekMetrics.budgetState)}</span>
-          <span className="budget-status-sep">·</span>
-          <span className="budget-status-range">{weekRangeLabel}</span>
-        </p>
+        <BudgetWeekPicker
+          selectedWeek={selectedWeek}
+          isCurrentWeek={isCurrentWeek}
+          onPreviousWeek={goToPreviousWeek}
+          onNextWeek={goToNextWeek}
+        />
       </header>
 
       <BudgetGauge
@@ -190,6 +194,7 @@ export default function BudgetPage() {
         percentRemaining={weekMetrics.percentRemaining}
         daysLeft={daysLeftInWeek}
         budgetState={weekMetrics.budgetState}
+        isCurrentWeek={isCurrentWeek}
       />
 
       <BudgetSummaryCard
@@ -264,7 +269,9 @@ export default function BudgetPage() {
         <h2 className="panel-title">
           Spending trend
           <span className="budget-chart-subtitle">
-            {chartPeriod === 'week' ? 'Last 7 days' : 'Month to date'}
+            {chartPeriod === 'week'
+              ? (isCurrentWeek ? 'Last 7 days' : weekRangeLabel)
+              : 'Month to date'}
           </span>
         </h2>
         <SpendingLineChart

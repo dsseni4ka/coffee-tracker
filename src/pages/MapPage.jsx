@@ -13,6 +13,7 @@ import {
 } from '../utils/mapMarkers'
 import { getCurrentPosition, searchNearbyCafes } from '../utils/nearbyCafeSearch'
 import { computeFavoriteCafes } from '../utils/favoriteCafes'
+import MapFeaturedDrinks from '../components/MapFeaturedDrinks'
 
 const DEFAULT_CENTER = [52.3676, 4.9041]
 const DEFAULT_ZOOM = 14
@@ -299,6 +300,8 @@ export default function MapPage() {
       {nearbyMessage && (
         <p className="map-page-meta map-page-meta--highlight">{nearbyMessage}</p>
       )}
+
+      <MapFeaturedDrinks userCenter={userCenter} />
 
       <section className="map-favorites-section">
         <div className="map-favorites-header">

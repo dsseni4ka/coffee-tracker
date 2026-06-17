@@ -38,7 +38,7 @@ export default function DaySummaryCard({ date, drinks = [], collageRef, onBackTo
     <div className="home-card week-summary-card day-summary-card">
       <div className="week-budget-header">
         <div>
-          <span>{isToday ? 'Today' : format(date, 'EEEE')}</span>
+          <span className="week-budget-eyebrow">{isToday ? 'Today' : format(date, 'EEEE')}</span>
           <div className="day-summary-date">{format(date, 'MMM d, yyyy')}</div>
           <div className="sipspend-spent">
             <span className="currency">€</span>

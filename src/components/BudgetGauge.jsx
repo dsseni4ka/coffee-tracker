@@ -15,14 +15,18 @@ export default function BudgetGauge({
   percentRemaining,
   daysLeft,
   budgetState,
+  isCurrentWeek = true,
 }) {
   const isOverspent = budgetState === 'danger'
   const displayAmount = isOverspent ? 0 : remaining
   const fillLength = isOverspent ? 0 : (percentRemaining / 100) * ARC_LENGTH
   const dashOffset = ARC_LENGTH - fillLength
+  const metaLabel = isCurrentWeek
+    ? `${percentRemaining}% · ${daysLeft} ${daysLeft === 1 ? 'day' : 'days'} left`
+    : `${percentRemaining}% · week complete`
 
   return (
-    <div className="budget-gauge" role="img" aria-label={`${formatPrice(displayAmount)} left to spend, ${percentRemaining}% remaining, ${daysLeft} days left`}>
+    <div className="budget-gauge" role="img" aria-label={`${formatPrice(displayAmount)} left to spend, ${percentRemaining}% remaining`}>
       <svg className="budget-gauge-svg" viewBox={`0 0 ${SIZE} ${SIZE}`} aria-hidden>
         <circle
           className="budget-gauge-track"
@@ -54,9 +58,7 @@ export default function BudgetGauge({
           <span className="currency">€</span>
           <TallyAmount value={displayAmount} animateOnMount />
         </span>
-        <span className="budget-gauge-meta">
-          {percentRemaining}% · {daysLeft} {daysLeft === 1 ? 'day' : 'days'} left
-        </span>
+        <span className="budget-gauge-meta">{metaLabel}</span>
       </div>
     </div>
   )

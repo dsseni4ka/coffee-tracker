@@ -1,8 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { formatAmount } from '../utils/format'
 import { getDrinkStickerSrc } from '../data/sipSpendDrinks'
 import { getDrinkType } from '../data/drinkTypes'
 import { getWeeklyBudgetMetrics } from '../utils/weeklyBudget'
+import TallyAmount from './sipspend/TallyAmount'
 import '../styles/sipspend.css'
 
 const STICKER_SLOTS = [
@@ -93,10 +93,10 @@ export default function WeeklyBudgetCard({
     <div className="home-card week-summary-card">
       <div className="week-budget-header">
         <div>
-          <span>Weekly Spent</span>
+          <span className="week-budget-eyebrow">Weekly Spent</span>
           <div className="sipspend-spent">
             <span className="currency">€</span>
-            <span className="amount">{formatAmount(totalSpent)}</span>
+            <TallyAmount value={totalSpent} animateOnMount />
           </div>
         </div>
         <div
