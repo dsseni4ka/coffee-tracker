@@ -1,9 +1,39 @@
+import os from 'node:os'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
+function phoneDevLink() {
+  return {
+    name: 'phone-dev-link',
+    configureServer(server) {
+      server.middlewares.use('/__dev/phone-url', (_req, res) => {
+        const port = server.config.server.port ?? 5173
+        const urls = []
+        for (const ifaces of Object.values(os.networkInterfaces())) {
+          if (!ifaces) continue
+          for (const iface of ifaces) {
+            if (iface.family === 'IPv4' && !iface.internal) {
+              urls.push(`http://${iface.address}:${port}`)
+            }
+          }
+        }
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify({ urls }))
+      })
+    },
+  }
+}
+
 export default defineConfig({
+  server: {
+    host: true,
+  },
+  preview: {
+    host: true,
+  },
   plugins: [
+    phoneDevLink(),
     react(),
     VitePWA({
       registerType: 'autoUpdate',

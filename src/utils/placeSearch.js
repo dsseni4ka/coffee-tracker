@@ -28,6 +28,27 @@ function mapPhotonFeature(feature) {
   }
 }
 
+export async function reverseGeocode(lat, lng) {
+  if (lat == null || lng == null) return null
+
+  const params = new URLSearchParams({
+    lat: String(lat),
+    lon: String(lng),
+    lang: 'en',
+  })
+
+  try {
+    const res = await fetch(`https://photon.komoot.io/reverse?${params}`)
+    if (!res.ok) return null
+
+    const data = await res.json()
+    const feature = data.features?.[0]
+    return feature ? mapPhotonFeature(feature) : null
+  } catch {
+    return null
+  }
+}
+
 export async function searchPlaces(query, center, limit = 6) {
   const q = query.trim()
   if (q.length < 2) return []

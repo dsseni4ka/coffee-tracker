@@ -11,22 +11,27 @@ import {
   startOfWeek,
   subMonths,
 } from 'date-fns'
-import { getDrinkType } from '../data/drinkTypes'
 import { getAllDrinks, toDateKey } from '../db/database'
-import DrinkSticker from '../components/DrinkSticker'
+import { getDrinkStickerSrc } from '../data/sipSpendDrinks'
+import { useBudget } from '../hooks/useBudget'
+import { WEEK_OPTIONS, WEEKDAY_LABELS } from '../utils/calendarWeek'
 import QuickLogSheet from '../components/QuickLogSheet'
 import WeeklyBudgetCard from '../components/WeeklyBudgetCard'
 import RecentSipsCard from '../components/RecentSipsCard'
+import { ChevronLeftIcon, ChevronRightIcon } from '../components/icons/NavIcons'
 
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const WEEKDAYS = WEEKDAY_LABELS
 
 export default function CalendarHomePage() {
+  const { weeklyLimit } = useBudget()
   const [month, setMonth] = useState(() => startOfMonth(new Date()))
   const [drinksByDate, setDrinksByDate] = useState({})
   const [selected, setSelected] = useState(new Date())
   const [showLog, setShowLog] = useState(false)
   const [sipRefresh, setSipRefresh] = useState(0)
+  const [landingDrink, setLandingDrink] = useState(null)
   const touchStartX = useRef(null)
+  const weeklyCollageRef = useRef(null)
 
   const load = useCallback(async () => {
     const all = await getAllDrinks()
@@ -44,16 +49,15 @@ export default function CalendarHomePage() {
   }, [load])
 
   const days = useMemo(() => {
-    const start = startOfWeek(startOfMonth(month))
-    const end = endOfWeek(endOfMonth(month))
+    const start = startOfWeek(startOfMonth(month), WEEK_OPTIONS)
+    const end = endOfWeek(endOfMonth(month), WEEK_OPTIONS)
     return eachDayOfInterval({ start, end })
   }, [month])
 
   const today = new Date()
-  const monthPrefix = format(month, 'yyyy-MM')
 
   const weekStats = useMemo(() => {
-    const weekStart = startOfWeek(new Date(), { weekStartsOn: 0 }).getTime()
+    const weekStart = startOfWeek(new Date(), WEEK_OPTIONS).getTime()
     let totalSpent = 0
     const typeCounts = {}
 
@@ -72,34 +76,38 @@ export default function CalendarHomePage() {
     return { totalSpent, collageTypes }
   }, [drinksByDate])
 
-  const monthStats = useMemo(() => {
-    let cups = 0
-    const shops = new Set()
-    const typeCounts = {}
+  const handleDrinkLanding = useCallback((drinkType) => {
+    const isNew = !weekStats.collageTypes.slice(0, 5).includes(drinkType)
+    if (isNew) {
+      setLandingDrink({ type: drinkType, isNew: true })
+    }
+    load()
+  }, [weekStats.collageTypes, load])
 
+  const monthCups = useMemo(() => {
+    const monthPrefix = format(month, 'yyyy-MM')
+    let cups = 0
     for (const [key, drinks] of Object.entries(drinksByDate)) {
       if (!key.startsWith(monthPrefix)) continue
       cups += drinks.length
-      for (const drink of drinks) {
-        typeCounts[drink.drinkType] = (typeCounts[drink.drinkType] ?? 0) + 1
-        if (drink.placeName?.trim()) shops.add(drink.placeName.trim())
-      }
     }
+    return cups
+  }, [drinksByDate, month])
 
-    const collageTypes = Object.entries(typeCounts)
-      .sort((a, b) => b[1] - a[1])
-      .map(([id]) => id)
+  const viewingCurrentMonth = isSameMonth(month, today)
 
-    const favoriteId = collageTypes[0] ?? null
+  function goToPrevMonth() {
+    setMonth((m) => subMonths(m, 1))
+  }
 
-    return {
-      cups,
-      shops: shops.size,
-      collageTypes,
-      favoriteId,
-      favorite: favoriteId ? getDrinkType(favoriteId) : null,
-    }
-  }, [drinksByDate, monthPrefix])
+  function goToNextMonth() {
+    setMonth((m) => addMonths(m, 1))
+  }
+
+  function goToToday() {
+    setMonth(startOfMonth(today))
+    setSelected(today)
+  }
 
   function handleTouchStart(e) {
     touchStartX.current = e.touches[0].clientX
@@ -116,8 +124,36 @@ export default function CalendarHomePage() {
   return (
     <div className="calendar-home">
       <header className="calendar-hero">
-        <h1>Today</h1>
-        <p>{format(today, 'EEE, MMM d, yyyy')}</p>
+        <div className="calendar-month-nav">
+          <button
+            type="button"
+            className="calendar-month-nav-btn"
+            onClick={goToPrevMonth}
+            aria-label="Previous month"
+          >
+            <ChevronLeftIcon size="sm" />
+          </button>
+
+          <div className="calendar-month-label">
+            <h1>{format(month, 'MMMM yyyy')}</h1>
+            <p>{format(selected, 'EEE, MMM d, yyyy')}</p>
+          </div>
+
+          <button
+            type="button"
+            className="calendar-month-nav-btn"
+            onClick={goToNextMonth}
+            aria-label="Next month"
+          >
+            <ChevronRightIcon size="sm" />
+          </button>
+        </div>
+
+        {!viewingCurrentMonth && (
+          <button type="button" className="calendar-today-btn" onClick={goToToday}>
+            Today
+          </button>
+        )}
       </header>
 
       <div
@@ -151,19 +187,23 @@ export default function CalendarHomePage() {
                 ]
                   .filter(Boolean)
                   .join(' ')}
-                onClick={() => setSelected(day)}
+                onClick={() => {
+                  setSelected(day)
+                  if (!isSameMonth(day, month)) {
+                    setMonth(startOfMonth(day))
+                  }
+                }}
               >
                 {!hasDrink && (
                   <span className="calendar-day-num">{format(day, 'd')}</span>
                 )}
                 {hasDrink && (
                   <>
-                    <DrinkSticker
-                      drinkType={primaryDrink.drinkType}
-                      size="cell"
-                      cutout
-                      emoji
+                    <img
+                      src={getDrinkStickerSrc(primaryDrink.drinkType)}
+                      alt=""
                       className="calendar-day-sticker"
+                      draggable={false}
                     />
                     {dayDrinks.length > 1 && (
                       <span className="calendar-day-badge">{dayDrinks.length}</span>
@@ -183,25 +223,30 @@ export default function CalendarHomePage() {
       <WeeklyBudgetCard
         totalSpent={weekStats.totalSpent}
         collageTypes={weekStats.collageTypes}
+        limit={weeklyLimit}
+        collageRef={weeklyCollageRef}
+        landingDrink={landingDrink}
+        onLandingRevealDone={() => setLandingDrink(null)}
       />
 
       <RecentSipsCard refreshKey={sipRefresh} onChanged={load} />
 
-      <div className="home-card monthly-favorite-card">
-        <div className="monthly-favorite-row">
-          <span className="home-card-label monthly-favorite-label">Monthly Favorite</span>
-          {monthStats.favorite ? (
-            <DrinkSticker drinkType={monthStats.favorite.id} size="lg" cutout emoji />
-          ) : (
-            <DrinkSticker drinkType="latte" size="lg" cutout emoji />
-          )}
+      <div className="home-card monthly-cups-card">
+        <span className="home-card-label">
+          {viewingCurrentMonth ? 'This Month' : format(month, 'MMMM yyyy')}
+        </span>
+        <div className="monthly-cups-stat">
+          <span className="monthly-cups-value">{monthCups}</span>
+          <span className="monthly-cups-label">{monthCups === 1 ? 'cup' : 'cups'}</span>
         </div>
       </div>
 
       {showLog && (
         <QuickLogSheet
+          flyTargetRef={weeklyCollageRef}
           onClose={() => setShowLog(false)}
           onSaved={load}
+          onDrinkLanding={handleDrinkLanding}
         />
       )}
     </div>

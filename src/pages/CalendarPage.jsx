@@ -14,8 +14,9 @@ import {
 import { getAllDrinks, toDateKey } from '../db/database'
 import { DrinkListItem } from '../components/DrinkForm'
 import PageHeader from '../components/PageHeader'
+import { WEEK_OPTIONS, WEEKDAY_LABELS } from '../utils/calendarWeek'
 
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const WEEKDAYS = WEEKDAY_LABELS
 
 export default function CalendarPage() {
   const [month, setMonth] = useState(new Date())
@@ -37,8 +38,8 @@ export default function CalendarPage() {
   }, [load])
 
   const days = useMemo(() => {
-    const start = startOfWeek(startOfMonth(month))
-    const end = endOfWeek(endOfMonth(month))
+    const start = startOfWeek(startOfMonth(month), WEEK_OPTIONS)
+    const end = endOfWeek(endOfMonth(month), WEEK_OPTIONS)
     return eachDayOfInterval({ start, end })
   }, [month])
 

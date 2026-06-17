@@ -39,6 +39,21 @@ const PATHS = {
       <ellipse cx="12" cy="9.5" rx="4" ry="1.2" stroke="currentColor" strokeWidth="1.4" />
     </>
   ),
+  'iced-latte': (
+    <>
+      <path d="M9 6h6l1 12a3 3 0 0 1-3 3h-2a3 3 0 0 1-3-3L9 6z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M8.5 11h7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <rect x="10" y="14" width="2" height="2" rx="0.4" fill="currentColor" opacity="0.5" />
+      <rect x="13" y="15" width="2" height="2" rx="0.4" fill="currentColor" opacity="0.5" />
+    </>
+  ),
+  'iced-cappuccino': (
+    <>
+      <path d="M8 10h8v6a3 3 0 0 1-3 3h-2a3 3 0 0 1-3-3v-6z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M8 10c0-2 1.8-3.5 4-3.5s4 1.5 4 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <rect x="10" y="14" width="2" height="2" rx="0.4" fill="currentColor" opacity="0.5" />
+    </>
+  ),
   'cold-brew': (
     <>
       <path d="M9 5h6v14a2.5 2.5 0 0 1-2.5 2.5h-1A2.5 2.5 0 0 1 9 19V5z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
@@ -62,6 +77,13 @@ const PATHS = {
     <>
       <path d="M9 6h6l1 12a3 3 0 0 1-3 3h-2a3 3 0 0 1-3-3L9 6z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
       <path d="M9 10h6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </>
+  ),
+  'iced-matcha': (
+    <>
+      <path d="M7 10h10l-1.5 8H8.5L7 10z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M9 7h6l-0.5 3H9.5L9 7z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <rect x="10" y="14" width="2" height="2" rx="0.4" fill="currentColor" opacity="0.5" />
     </>
   ),
 }

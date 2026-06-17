@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css'
 import { format } from 'date-fns'
 import { getAllDrinks, getDrinksWithLocation } from '../db/database'
 import { getDrinkType } from '../data/drinkTypes'
-import { MapController, MapFocusController } from '../components/MapController'
+import { MapController, MapFocusController, MapLocateBridge } from '../components/MapController'
 import {
   createCoffeeMarkerIcon,
   createNearbyCafeMarkerIcon,
@@ -79,6 +79,7 @@ function NearbyCafeMarker({ cafe, selected, icon }) {
 
 export default function MapPage() {
   const mapCardRef = useRef(null)
+  const locateRef = useRef(null)
   const [drinks, setDrinks] = useState([])
   const [allDrinks, setAllDrinks] = useState([])
   const [userCenter, setUserCenter] = useState(null)
@@ -209,6 +210,7 @@ export default function MapPage() {
             center={DEFAULT_CENTER}
             zoom={DEFAULT_ZOOM}
             scrollWheelZoom
+            zoomControl={false}
             className="map-page-leaflet"
             style={{ height: '100%', width: '100%' }}
           >
@@ -226,6 +228,7 @@ export default function MapPage() {
               defaultZoom={DEFAULT_ZOOM}
             />
             <MapFocusController focus={mapFocus} />
+            <MapLocateBridge userCenter={userCenter} locateRef={locateRef} />
 
             {userCenter && (
               <Marker position={userCenter} icon={userLocationIcon} zIndexOffset={-100}>
@@ -262,6 +265,26 @@ export default function MapPage() {
             })}
           </MapContainer>
         )}
+        <div className="map-floating-controls" aria-hidden={!mapMounted}>
+          <button
+            type="button"
+            className="map-floating-btn map-floating-btn--locate"
+            aria-label="Center on my location"
+            disabled={!userCenter}
+            onClick={() => locateRef.current?.()}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M12 2v3M12 19v3M2 12h3M19 12h3"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2" />
+              <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       <button

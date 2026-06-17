@@ -108,27 +108,81 @@ a {
 }
 
 .calendar-hero {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
   padding: var(--space-xs) 0 var(--space-sm);
 }
 
-.calendar-hero h1 {
+.calendar-month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: var(--space-sm);
+}
+
+.calendar-month-nav-btn {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border);
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.calendar-month-nav-btn:active {
+  background: var(--color-surface-soft);
+  color: var(--color-text);
+}
+
+.calendar-month-label {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+.calendar-month-label h1 {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--color-text);
   line-height: 1.2;
 }
 
-.calendar-hero p {
+.calendar-month-label p {
   margin: 4px 0 0;
   font-family: var(--font-sans);
   font-size: 0.75rem;
   font-weight: 500;
   color: var(--color-text-tertiary);
   letter-spacing: 0.01em;
+}
+
+.calendar-today-btn {
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  letter-spacing: 0.02em;
+}
+
+.calendar-today-btn:active {
+  background: var(--color-surface-soft);
 }
 
 .calendar-panel {
@@ -192,10 +246,14 @@ a {
 }
 
 .calendar-day-sticker {
-  width: 100% !important;
-  height: 100% !important;
+  width: 100%;
+  height: 100%;
   max-width: 42px;
   max-height: 42px;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 2px 4px rgba(44, 37, 32, 0.16));
+  pointer-events: none;
 }
 
 .calendar-day-badge {
@@ -311,22 +369,68 @@ a {
   width: 148px;
   height: 72px;
   flex-shrink: 0;
+  transition: opacity 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.month-sticker-collage--empty {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .collage-sticker {
   position: absolute;
   top: 50%;
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(44, 37, 32, 0.2));
+  pointer-events: none;
   transform: translateY(-50%);
+  transition:
+    left 0.46s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.46s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.32s ease,
+    filter 0.32s ease;
 }
 
-.collage-sticker--0 { left: 0; z-index: 1; transform: translateY(-50%) rotate(-6deg); }
-.collage-sticker--1 { left: 26px; z-index: 2; transform: translateY(-52%) rotate(4deg); }
-.collage-sticker--2 { left: 52px; z-index: 3; transform: translateY(-48%) rotate(-3deg); }
-.collage-sticker--3 { left: 78px; z-index: 4; transform: translateY(-54%) rotate(5deg); }
-.collage-sticker--4 { left: 104px; z-index: 5; transform: translateY(-50%) rotate(-2deg); }
+.collage-sticker--pending {
+  opacity: 0 !important;
+}
 
-.monthly-favorite-card {
-  padding: var(--space-md) var(--space-lg);
+.collage-sticker--enter {
+  animation: collage-sticker-enter 0.52s cubic-bezier(0.34, 1.45, 0.64, 1) both;
+}
+
+@keyframes collage-sticker-enter {
+  0% {
+    opacity: 0;
+    filter: drop-shadow(0 4px 8px rgba(44, 37, 32, 0));
+    transform: translateY(-50%) scale(0.35) rotate(0deg);
+  }
+  55% {
+    opacity: 1;
+    filter: drop-shadow(0 6px 12px rgba(44, 37, 32, 0.18));
+    transform: translateY(-50%) scale(1.08) rotate(0deg);
+  }
+  100% {
+    opacity: 1;
+    filter: drop-shadow(0 4px 8px rgba(44, 37, 32, 0.2));
+    transform: var(--collage-enter-to, translateY(-50%) rotate(0deg));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .month-sticker-collage {
+    transition: none;
+  }
+
+  .collage-sticker {
+    transition: none;
+  }
+
+  .collage-sticker--enter {
+    animation: none;
+  }
 }
 
 .recent-sips-card {
@@ -337,16 +441,37 @@ a {
   margin-top: 0;
 }
 
-.monthly-favorite-row {
+.monthly-cups-card {
+  padding: var(--space-md) var(--space-lg);
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-md);
 }
 
-.monthly-favorite-label {
+.monthly-cups-card .home-card-label {
   margin-bottom: 0;
-  padding-top: 4px;
+}
+
+.monthly-cups-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.monthly-cups-value {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--color-text);
+}
+
+.monthly-cups-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
 }
 
 .add-cup-btn {
@@ -601,6 +726,16 @@ a {
     right: var(--space-md);
     transform: none;
   }
+}
+
+.app-main--scroll-locked {
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
+
+body.sheet-scroll-locked {
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 /* ── Bottom sheet ── */
@@ -2205,12 +2340,28 @@ a {
   border-radius: var(--radius-lg);
   overflow: hidden;
   position: relative;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
 }
 
 .map-picker-leaflet,
 .map-picker-map .leaflet-container {
   height: 100% !important;
   width: 100% !important;
+  background: #f2efe9;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.map-picker-map .leaflet-control-attribution {
+  font-size: 9px;
+  line-height: 1.2;
+  background: rgba(255, 255, 255, 0.72) !important;
+  color: #5f6368;
+  padding: 2px 6px;
+  border-radius: 4px 0 0 0;
+}
+
+.map-picker-map .leaflet-tile-pane {
+  filter: saturate(1.14) contrast(1.04) brightness(1.02);
 }
 
 /* ── Map page ── */
@@ -2219,9 +2370,13 @@ a {
   padding: 0;
   overflow: hidden;
   margin-bottom: var(--space-md);
-  height: min(68vh, 540px);
-  min-height: 360px;
+  height: min(50vh, 340px);
+  min-height: 280px;
   position: relative;
+  border: none;
+  border-radius: 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.06);
+  background: #f2efe9;
 }
 
 .map-page-leaflet,
@@ -2229,8 +2384,80 @@ a {
   height: 100% !important;
   width: 100% !important;
   z-index: 0;
-  font-family: var(--font-mono);
-  background: #e8e4dc;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #f2efe9;
+}
+
+.map-page-card .leaflet-tile-pane {
+  filter: saturate(1.14) contrast(1.04) brightness(1.02);
+}
+
+.map-page-card .leaflet-control-attribution {
+  margin: 0;
+  font-size: 9px;
+  line-height: 1.2;
+  background: rgba(255, 255, 255, 0.72) !important;
+  color: #5f6368;
+  padding: 2px 6px;
+  border-radius: 4px 0 0 0;
+}
+
+.map-page-card .leaflet-control-attribution a {
+  color: #5f6368;
+}
+
+.map-page-card .leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+  padding: 0;
+}
+
+.map-page-card .leaflet-popup-content {
+  margin: 12px 14px;
+  font-family: var(--font-sans);
+}
+
+.map-page-card .leaflet-popup-tip {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.map-floating-controls {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 450;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.map-floating-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #3c4043;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.28);
+  pointer-events: auto;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.map-floating-btn:hover:not(:disabled) {
+  background: #f8f9fa;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+}
+
+.map-floating-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.map-floating-btn--locate {
+  color: #4285f4;
 }
 
 .coffee-map-marker {
@@ -2238,18 +2465,27 @@ a {
   border: none;
 }
 
-.coffee-map-marker-emoji {
+.map-poi-marker {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  font-size: 1.35rem;
+  width: 100%;
+  height: 100%;
+  font-size: 0.9rem;
   line-height: 1;
-  background: #ffffff;
-  border: 2.5px solid #ffffff;
-  border-radius: 50%;
-  box-shadow: 0 2px 10px rgba(45, 41, 38, 0.22);
+  border-radius: 9px;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 7px rgba(60, 64, 67, 0.32);
+}
+
+.map-poi-marker--cafe {
+  background: linear-gradient(180deg, #fbbc04 0%, #f29900 100%);
+  font-size: 0.8rem;
+}
+
+.map-poi-marker--log {
+  background: linear-gradient(180deg, #669df6 0%, #4285f4 100%);
+  font-size: 0.95rem;
 }
 
 .coffee-map-popup-inner {
@@ -2300,33 +2536,65 @@ a {
   opacity: 0.65;
 }
 
-.nearby-cafe-marker .nearby-cafe-marker-emoji {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  font-size: 1.1rem;
-  line-height: 1;
-  background: #f3ebe3;
-  border: 2.5px dashed var(--color-accent);
-  border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(45, 41, 38, 0.15);
-}
-
 .user-location-marker {
   background: transparent;
   border: none;
 }
 
+.user-location-beam,
+.user-location-pulse,
+.user-location-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.user-location-beam {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(66, 133, 244, 0.35) 0%,
+    rgba(66, 133, 244, 0.14) 42%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.user-location-pulse {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(66, 133, 244, 0.24);
+  animation: user-location-pulse 2.4s ease-out infinite;
+  pointer-events: none;
+}
+
 .user-location-dot {
   display: block;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  background: #3b82f6;
-  border: 2.5px solid #ffffff;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.35);
+  background: #4285f4;
+  border: 3px solid #ffffff;
+  box-shadow: 0 1px 5px rgba(60, 64, 67, 0.35);
+}
+
+@keyframes user-location-pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.55);
+    opacity: 0.85;
+  }
+  70% {
+    transform: translate(-50%, -50%) scale(1.35);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.35);
+    opacity: 0;
+  }
 }
 
 .map-page-empty {
@@ -2693,6 +2961,55 @@ button.map-favorite-card {
 
 .settings-pill-group {
   flex-wrap: wrap;
+}
+
+.settings-phone-card {
+  padding: var(--space-md);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  margin-top: var(--space-xs);
+}
+
+.settings-phone-hint {
+  margin: 0 0 var(--space-sm);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+}
+
+.settings-phone-row {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-sm);
+}
+
+.settings-phone-url {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  line-height: 1.35;
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-phone-copy {
+  flex-shrink: 0;
+  padding: 0 14px;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--color-accent);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .stats-sheet-body {

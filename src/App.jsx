@@ -3,7 +3,7 @@ import Layout from './components/Layout'
 import CalendarHomePage from './pages/CalendarHomePage'
 import MapPage from './pages/MapPage'
 import CommunityPage from './pages/CommunityPage'
-import ProfilePage from './pages/ProfilePage'
+import BudgetPage from './pages/BudgetPage'
 
 export default function App() {
   return (
@@ -13,7 +13,7 @@ export default function App() {
           <Route path="/" element={<CalendarHomePage />} />
           <Route path="/map" element={<MapPage />} />
           <Route path="/community" element={<CommunityPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile" element={<BudgetPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

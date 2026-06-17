@@ -14,8 +14,9 @@ import {
 import { getDrinkType } from '../data/drinkTypes'
 import { toDateKey } from '../db/database'
 import DrinkSticker from './DrinkSticker'
+import { WEEK_OPTIONS, WEEKDAY_LABELS_SHORT } from '../utils/calendarWeek'
 
-const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+const WEEKDAYS = WEEKDAY_LABELS_SHORT
 
 export default function ProfileCalendar({ drinksByDate }) {
   const [month, setMonth] = useState(() => startOfMonth(new Date()))
@@ -23,8 +24,8 @@ export default function ProfileCalendar({ drinksByDate }) {
   const today = new Date()
 
   const days = useMemo(() => {
-    const start = startOfWeek(startOfMonth(month))
-    const end = endOfWeek(endOfMonth(month))
+    const start = startOfWeek(startOfMonth(month), WEEK_OPTIONS)
+    const end = endOfWeek(endOfMonth(month), WEEK_OPTIONS)
     return eachDayOfInterval({ start, end })
   }, [month])
 

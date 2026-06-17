@@ -6,8 +6,11 @@ export const DRINK_TYPES = [
   { id: 'cappuccino', label: 'Cappuccino', emoji: '☁️', caffeine: 75, category: 'coffee', stickerBg: '#EBE3D9' },
   { id: 'flat-white', label: 'Flat White', emoji: '🤍', caffeine: 130, category: 'coffee', stickerBg: '#E7E0D8' },
   { id: 'cold-brew', label: 'Cold Brew', emoji: '🧊', caffeine: 200, category: 'coffee', stickerBg: '#DCE8EE' },
+  { id: 'iced-latte', label: 'Iced Latte', emoji: '🧊', caffeine: 75, category: 'coffee', stickerBg: '#E3EDF5' },
+  { id: 'iced-cappuccino', label: 'Iced Cappuccino', emoji: '🧊', caffeine: 75, category: 'coffee', stickerBg: '#E8EEF3' },
   { id: 'drip', label: 'Drip Coffee', emoji: '💧', caffeine: 95, category: 'coffee', stickerBg: '#E6DDD2' },
   { id: 'matcha', label: 'Matcha', emoji: '🍵', caffeine: 70, category: 'matcha', stickerBg: '#E0EBE0' },
+  { id: 'iced-matcha', label: 'Iced Matcha', emoji: '🍵', caffeine: 55, category: 'matcha', stickerBg: '#E2EDE8' },
   { id: 'matcha-latte', label: 'Matcha Latte', emoji: '🍵', caffeine: 55, category: 'matcha', stickerBg: '#E4EDE4' },
 ]
 

@@ -3,14 +3,14 @@ import {
   CalendarNavIcon,
   CommunityNavIcon,
   MapNavIcon,
-  ProfileNavIcon,
+  StatsIcon,
 } from './icons/NavIcons'
 
 const NAV_ITEMS = [
   { to: '/', Icon: CalendarNavIcon, label: 'Calendar' },
   { to: '/map', Icon: MapNavIcon, label: 'Map' },
   { to: '/community', Icon: CommunityNavIcon, label: 'Community' },
-  { to: '/profile', Icon: ProfileNavIcon, label: 'Profile' },
+  { to: '/profile', Icon: StatsIcon, label: 'Budget' },
 ]
 
 export default function BottomNav() {

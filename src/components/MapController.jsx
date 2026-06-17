@@ -67,6 +67,22 @@ export function MapController({ drinks, userCenter, nearbyCafes = [], defaultZoo
   return null
 }
 
+export function MapLocateBridge({ userCenter, locateRef }) {
+  const map = useMap()
+
+  useEffect(() => {
+    if (!locateRef) return
+
+    locateRef.current = () => {
+      if (userCenter) {
+        map.flyTo(userCenter, 16, { duration: 0.5 })
+      }
+    }
+  }, [map, userCenter, locateRef])
+
+  return null
+}
+
 export function MapPickerController() {
   const map = useMap()
 

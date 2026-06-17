@@ -2,15 +2,20 @@ import { useCallback, useEffect, useImperativeHandle, useRef, useState, forwardR
 import {
   MOCK_LOCATIONS,
   PRICE_RULER,
-  SIP_SPEND_DRINKS,
 } from '../data/sipSpendDrinks'
+import { useSipSpendDrinks } from '../hooks/useSipSpendDrinks'
 import { addDrink, getAllDrinks } from '../db/database'
 import { computeFavoriteCafes } from '../utils/favoriteCafes'
 import { formatAmount, formatPrice } from '../utils/format'
+import { reverseGeocode } from '../utils/placeSearch'
 import CafeSearchInput from './CafeSearchInput'
 import { PinIcon } from './icons/NavIcons'
-import { CoffeeCupIcon } from './sipspend/CoffeeCupSvgs'
+import { CupStickerImage, StarSticker } from './sipspend/CoffeeCupSvgs'
+import CustomDrinkPanel from './sipspend/CustomDrinkPanel'
+import EditDrinkListPanel from './sipspend/EditDrinkListPanel'
 import SizeSlider from './sipspend/SizeSlider'
+import TallyAmount from './sipspend/TallyAmount'
+import { animateDrinkToCollage, wait } from '../utils/drinkFlyAnimation'
 import '../styles/sipspend.css'
 
 const { start: START_PRICE, end: END_PRICE, interval: INTERVAL, stepWidth: STEP_WIDTH } = PRICE_RULER
@@ -29,6 +34,12 @@ function buildRulerTicks() {
 }
 
 const RULER_TICKS = buildRulerTicks()
+
+const CAROUSEL_GAP = 16
+const CAROUSEL_CENTER_SCALE = 1.3
+const CAROUSEL_EDGE_SCALE = 0.78
+const CAROUSEL_SCROLL_END_MS = 120
+const CAROUSEL_SETTLE_DELAY_MS = 500
 
 const PriceRuler = forwardRef(function PriceRuler({ price, onPriceChange }, ref) {
   const scrollRef = useRef(null)
@@ -138,9 +149,11 @@ function Toast({ message, visible }) {
   )
 }
 
-export default function QuickLogSheet({ onClose, onSaved }) {
+export default function QuickLogSheet({ onClose, onSaved, onDrinkLanding, flyTargetRef }) {
+  const { drinks, visibleDrinks, addCustomDrink, updateDrinkList, resetDrinkList } = useSipSpendDrinks()
+  const [sheetView, setSheetView] = useState('log')
   const [selectedIndex, setSelectedIndex] = useState(1)
-  const [price, setPrice] = useState(SIP_SPEND_DRINKS[1].basePrice)
+  const [price, setPrice] = useState(() => visibleDrinks[1]?.basePrice ?? 4.5)
   const [sizeLabel, setSizeLabel] = useState('medium')
   const [useCurrentLocation, setUseCurrentLocation] = useState(true)
   const [cafeName, setCafeName] = useState('')
@@ -148,13 +161,85 @@ export default function QuickLogSheet({ onClose, onSaved }) {
   const [lng, setLng] = useState(null)
   const [quickLocations, setQuickLocations] = useState([])
   const [searchCenter, setSearchCenter] = useState(null)
+  const [currentLocationPlace, setCurrentLocationPlace] = useState(null)
+  const [currentLocationLoading, setCurrentLocationLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState({ message: '', visible: false })
+  const [sheetOffset, setSheetOffset] = useState(0)
+  const [sheetDragging, setSheetDragging] = useState(false)
+  const [sheetEntered, setSheetEntered] = useState(false)
+  const [logging, setLogging] = useState(false)
   const toastTimer = useRef(null)
   const carouselRef = useRef(null)
+  const carouselSettleTimer = useRef(null)
+  const carouselScrollEndTimer = useRef(null)
+  const closestIndexRef = useRef(selectedIndex)
+  const selectedIndexRef = useRef(selectedIndex)
   const rulerRef = useRef(null)
+  const sheetDragStartY = useRef(0)
+  const sheetDragY = useRef(0)
+  const sheetDraggingRef = useRef(false)
+  const pendingSelectId = useRef(null)
 
-  const selected = SIP_SPEND_DRINKS[selectedIndex]
+  const selected = visibleDrinks[selectedIndex] ?? visibleDrinks[0]
+
+  useEffect(() => {
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (prefersReduced) {
+      setSheetEntered(true)
+      return undefined
+    }
+
+    const frame = requestAnimationFrame(() => setSheetEntered(true))
+    return () => cancelAnimationFrame(frame)
+  }, [])
+
+  useEffect(() => {
+    const main = document.querySelector('.app-main')
+    main?.classList.add('app-main--scroll-locked')
+    document.body.classList.add('sheet-scroll-locked')
+
+    return () => {
+      main?.classList.remove('app-main--scroll-locked')
+      document.body.classList.remove('sheet-scroll-locked')
+    }
+  }, [])
+
+  useEffect(() => {
+    selectedIndexRef.current = selectedIndex
+    closestIndexRef.current = selectedIndex
+  }, [selectedIndex])
+
+  useEffect(() => {
+    if (selectedIndex >= visibleDrinks.length) {
+      const nextIndex = Math.max(0, visibleDrinks.length - 1)
+      setSelectedIndex(nextIndex)
+      if (visibleDrinks[nextIndex]) {
+        setPrice(visibleDrinks[nextIndex].basePrice)
+      }
+    }
+  }, [visibleDrinks, selectedIndex])
+
+  useEffect(() => {
+    if (!pendingSelectId.current) return
+    const idx = visibleDrinks.findIndex((d) => d.id === pendingSelectId.current)
+    if (idx >= 0) {
+      pendingSelectId.current = null
+      selectCoffee(idx)
+    }
+  }, [visibleDrinks]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const commitCarouselSelection = useCallback((index) => {
+    if (index < 0 || index >= visibleDrinks.length) return
+    if (index === selectedIndexRef.current) return
+
+    selectedIndexRef.current = index
+    closestIndexRef.current = index
+    const drink = visibleDrinks[index]
+    setSelectedIndex(index)
+    setPrice(drink.basePrice)
+    rulerRef.current?.scrollToPrice(drink.basePrice)
+  }, [visibleDrinks])
 
   useEffect(() => {
     getAllDrinks().then((drinks) => {
@@ -196,7 +281,154 @@ export default function QuickLogSheet({ onClose, onSaved }) {
     }
   }, [useCurrentLocation, searchCenter])
 
+  useEffect(() => {
+    if (!useCurrentLocation) {
+      setCurrentLocationPlace(null)
+      setCurrentLocationLoading(false)
+      return
+    }
+
+    const coords = lat != null && lng != null ? { lat, lng } : searchCenter
+    if (!coords) {
+      setCurrentLocationPlace(null)
+      setCurrentLocationLoading(true)
+      return
+    }
+
+    let cancelled = false
+    setCurrentLocationLoading(true)
+
+    reverseGeocode(coords.lat, coords.lng).then((place) => {
+      if (cancelled) return
+      setCurrentLocationPlace(place)
+      setCurrentLocationLoading(false)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [useCurrentLocation, lat, lng, searchCenter])
+
+  const updateCarouselMotion = useCallback(() => {
+    const carousel = carouselRef.current
+    if (!carousel) return
+
+    const carouselRect = carousel.getBoundingClientRect()
+    const centerX = carouselRect.left + carouselRect.width / 2
+    const viewportCenter = carousel.scrollLeft + carousel.clientWidth / 2
+    let closestIndex = 0
+    let closestDist = Infinity
+
+    Array.from(carousel.querySelectorAll('.sipspend-coffee-card')).forEach((card, index) => {
+      const cardWidth = card.offsetWidth
+      const cardCenter = card.offsetLeft + cardWidth / 2
+      const dist = Math.abs(cardCenter - viewportCenter)
+      if (dist < closestDist) {
+        closestDist = dist
+        closestIndex = index
+      }
+      const step = cardWidth + CAROUSEL_GAP
+      const t = Math.min(1, dist / step)
+      const scale = CAROUSEL_EDGE_SCALE + (1 - t) * (CAROUSEL_CENTER_SCALE - CAROUSEL_EDGE_SCALE)
+
+      const cardRect = card.getBoundingClientRect()
+      const cardCenterX = cardRect.left + cardRect.width / 2
+      const offset = (cardCenterX - centerX) / (carouselRect.width * 0.5)
+      const clamped = Math.max(-1.15, Math.min(1.15, offset))
+      const rotate = clamped * 4.5
+      const translateY = Math.abs(clamped) * 6
+      const wrap = card.querySelector('.sipspend-cup-wrap')
+
+      card.style.setProperty('--card-scale', scale.toFixed(3))
+      card.style.transform = `scale(${scale.toFixed(3)})`
+      card.style.zIndex = String(Math.round(scale * 10))
+
+      if (wrap) {
+        wrap.style.setProperty('--scroll-rotate', `${rotate.toFixed(2)}deg`)
+        wrap.style.setProperty('--scroll-y', `${translateY.toFixed(2)}px`)
+      }
+    })
+
+    closestIndexRef.current = closestIndex
+  }, [])
+
+  const clearCarouselSettleAnimation = useCallback(() => {
+    clearTimeout(carouselSettleTimer.current)
+    carouselRef.current?.querySelectorAll('.sipspend-cup-wrap').forEach((wrap) => {
+      wrap.classList.remove('cup-scroll-settle')
+    })
+  }, [])
+
+  const playCarouselSettleAnimation = useCallback(() => {
+    const carousel = carouselRef.current
+    if (!carousel) return
+
+    carousel.querySelectorAll('.sipspend-cup-wrap').forEach((wrap) => {
+      wrap.classList.remove('cup-scroll-settle')
+    })
+
+    const carouselRect = carousel.getBoundingClientRect()
+    const centerX = carouselRect.left + carouselRect.width / 2
+    let closestWrap = null
+    let closestDist = Infinity
+
+    Array.from(carousel.querySelectorAll('.sipspend-coffee-card')).forEach((card) => {
+      const cardRect = card.getBoundingClientRect()
+      const dist = Math.abs(cardRect.left + cardRect.width / 2 - centerX)
+      if (dist < closestDist) {
+        closestDist = dist
+        closestWrap = card.querySelector('.sipspend-cup-wrap')
+      }
+    })
+
+    closestWrap?.classList.add('cup-scroll-settle')
+  }, [])
+
+  const scheduleCarouselSettleAnimation = useCallback(() => {
+    clearTimeout(carouselSettleTimer.current)
+    carouselSettleTimer.current = setTimeout(playCarouselSettleAnimation, CAROUSEL_SETTLE_DELAY_MS)
+  }, [playCarouselSettleAnimation])
+
+  const finishCarouselScroll = useCallback(() => {
+    const carousel = carouselRef.current
+    carousel?.classList.remove('sipspend-carousel--scrolling')
+    commitCarouselSelection(closestIndexRef.current)
+    scheduleCarouselSettleAnimation()
+  }, [commitCarouselSelection, scheduleCarouselSettleAnimation])
+
+  useEffect(() => {
+    const carousel = carouselRef.current
+    if (!carousel) return
+
+    function onCarouselScroll() {
+      carousel.classList.add('sipspend-carousel--scrolling')
+      clearCarouselSettleAnimation()
+      clearTimeout(carouselScrollEndTimer.current)
+      updateCarouselMotion()
+      carouselScrollEndTimer.current = setTimeout(finishCarouselScroll, CAROUSEL_SCROLL_END_MS)
+    }
+
+    carousel.addEventListener('scroll', onCarouselScroll, { passive: true })
+    window.addEventListener('resize', updateCarouselMotion)
+    carousel.querySelectorAll('.sipspend-coffee-card')[selectedIndex]?.scrollIntoView({
+      inline: 'center',
+      block: 'nearest',
+    })
+    updateCarouselMotion()
+
+    return () => {
+      carousel.removeEventListener('scroll', onCarouselScroll)
+      window.removeEventListener('resize', updateCarouselMotion)
+      clearTimeout(carouselScrollEndTimer.current)
+      clearCarouselSettleAnimation()
+    }
+  }, [updateCarouselMotion, clearCarouselSettleAnimation, finishCarouselScroll])
+
   const placeSearchCenter = lat != null && lng != null ? { lat, lng } : searchCenter
+  const currentLocationLabel = currentLocationLoading
+    ? 'Finding your location…'
+    : currentLocationPlace?.name || 'Current location'
+  const currentLocationSubtitle = currentLocationPlace?.subtitle || ''
 
   function showToast(message) {
     if (toastTimer.current) clearTimeout(toastTimer.current)
@@ -207,15 +439,23 @@ export default function QuickLogSheet({ onClose, onSaved }) {
   }
 
   function selectCoffee(index) {
-    const drink = SIP_SPEND_DRINKS[index]
+    const drink = visibleDrinks[index]
+    if (!drink) return
+    closestIndexRef.current = index
+    selectedIndexRef.current = index
     setSelectedIndex(index)
     setPrice(drink.basePrice)
     rulerRef.current?.scrollToPrice(drink.basePrice)
-    carouselRef.current?.children[index]?.scrollIntoView({
+    clearTimeout(carouselScrollEndTimer.current)
+    clearCarouselSettleAnimation()
+    carouselRef.current?.classList.remove('sipspend-carousel--scrolling')
+    carouselRef.current?.querySelectorAll('.sipspend-coffee-card')[index]?.scrollIntoView({
       behavior: 'smooth',
       inline: 'center',
       block: 'nearest',
     })
+    updateCarouselMotion()
+    carouselScrollEndTimer.current = setTimeout(finishCarouselScroll, CAROUSEL_SCROLL_END_MS)
   }
 
   function adjustPrice(delta) {
@@ -232,14 +472,22 @@ export default function QuickLogSheet({ onClose, onSaved }) {
   }
 
   async function logCurrentCoffee() {
+    if (saving || !selected) return
     setSaving(true)
-    await addDrink({
+
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const targetEl = flyTargetRef?.current
+    const activeCard = carouselRef.current?.querySelector('.sipspend-coffee-card.cup-active')
+    const cupImage = activeCard?.querySelector('.sipspend-drink-sticker')
+    const canAnimate = !prefersReduced && targetEl && cupImage
+
+    const drinkPromise = addDrink({
       drinkType: selected.drinkType,
       sizeLabel,
       price,
       cafeName: cafeName.trim(),
       placeName: useCurrentLocation
-        ? 'Current location'
+        ? currentLocationPlace?.name || 'Current location'
         : cafeName.trim() || 'Unknown location',
       venueId: 'cafe',
       caffeineKnown: true,
@@ -247,6 +495,26 @@ export default function QuickLogSheet({ onClose, onSaved }) {
       lng,
       loggedAt: new Date(),
     })
+
+    if (canAnimate) {
+      setLogging(true)
+      await wait(260)
+      const fromRect = cupImage.getBoundingClientRect()
+      setSheetEntered(false)
+      await wait(300)
+      await animateDrinkToCollage({
+        fromRect,
+        stickerSrc: selected.sticker,
+        targetEl,
+        onApproach: () => onDrinkLanding?.(selected.drinkType),
+      })
+      await drinkPromise
+      setSaving(false)
+      onClose?.()
+      return
+    }
+
+    await drinkPromise
     setSaving(false)
     onSaved?.()
     showToast(`Logged ${selected.name} for ${formatPrice(price)}!`)
@@ -255,30 +523,98 @@ export default function QuickLogSheet({ onClose, onSaved }) {
 
   const isLocationSelected = (name) => cafeName.trim() === name
 
+  function finishSheetDrag() {
+    const moved = sheetDragY.current
+    sheetDragY.current = 0
+    sheetDraggingRef.current = false
+    setSheetDragging(false)
+    if (moved > 72 || moved <= 8) {
+      onClose?.()
+      return
+    }
+    setSheetOffset(0)
+  }
+
+  function onSheetHandlePointerDown(e) {
+    sheetDragStartY.current = e.clientY
+    sheetDragY.current = 0
+    sheetDraggingRef.current = true
+    setSheetDragging(true)
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }
+
+  function onSheetHandlePointerMove(e) {
+    if (!sheetDraggingRef.current) return
+    const delta = Math.max(0, e.clientY - sheetDragStartY.current)
+    sheetDragY.current = delta
+    setSheetOffset(delta)
+  }
+
+  function onSheetHandlePointerUp() {
+    if (!sheetDraggingRef.current) return
+    finishSheetDrag()
+  }
+
+  function onSheetHandlePointerCancel() {
+    if (!sheetDraggingRef.current) return
+    finishSheetDrag()
+  }
+
+  function handleCustomDrinkSave(payload) {
+    const drink = addCustomDrink(payload)
+    pendingSelectId.current = drink.id
+    setSheetView('log')
+  }
+
+  function handleEditListSave(nextDrinks) {
+    updateDrinkList(nextDrinks)
+    setSheetView('log')
+  }
+
+  const sheetAriaLabel =
+    sheetView === 'custom' ? 'Add custom drink' : sheetView === 'edit-list' ? 'Edit drink list' : 'Log coffee'
+
   return (
     <>
-      <div className="sheet-overlay" onClick={onClose} role="presentation">
+      <div
+        className={`sheet-overlay sipspend-sheet-overlay${sheetEntered ? ' sipspend-sheet-overlay--visible' : ''}${logging ? ' sipspend-sheet-overlay--logging' : ''}`}
+        onClick={onClose}
+        role="presentation"
+      >
         <div
-          className="sheet sipspend-sheet"
+          className={`sheet sipspend-sheet${sheetEntered ? ' sipspend-sheet--visible' : ''}${sheetDragging ? ' sipspend-sheet--dragging' : ''}${logging ? ' sipspend-sheet--logging' : ''}`}
+          style={sheetOffset ? { transform: `translateY(${sheetOffset}px)` } : undefined}
           onClick={(e) => e.stopPropagation()}
           role="dialog"
-          aria-label="SipSpend"
+          aria-label={sheetAriaLabel}
         >
-          <div className="sipspend-sheet-handle" aria-hidden />
+          <button
+            type="button"
+            className="sipspend-sheet-handle-zone"
+            aria-label="Close"
+            onPointerDown={onSheetHandlePointerDown}
+            onPointerMove={onSheetHandlePointerMove}
+            onPointerUp={onSheetHandlePointerUp}
+            onPointerCancel={onSheetHandlePointerCancel}
+          >
+            <span className="sipspend-sheet-handle" aria-hidden />
+          </button>
 
+          {sheetView === 'custom' ? (
+            <CustomDrinkPanel
+              onBack={() => setSheetView('log')}
+              onSave={handleCustomDrinkSave}
+            />
+          ) : sheetView === 'edit-list' ? (
+            <EditDrinkListPanel
+              drinks={drinks}
+              onBack={() => setSheetView('log')}
+              onSave={handleEditListSave}
+              onReset={resetDrinkList}
+            />
+          ) : (
+            <>
           <div className="sipspend-body">
-            <header className="sipspend-header">
-              <div className="sipspend-header-left">
-                <button type="button" className="sipspend-close" onClick={onClose}>
-                  Cancel
-                </button>
-                <div className="sipspend-header-copy">
-                  <span>Today&apos;s Sip</span>
-                  <h1>SipSpend</h1>
-                </div>
-              </div>
-            </header>
-
             <section className="sipspend-section">
               <div className="sipspend-section-label">
                 <h2>1. Tap a Cup</h2>
@@ -286,20 +622,48 @@ export default function QuickLogSheet({ onClose, onSaved }) {
               </div>
 
               <div ref={carouselRef} className="sipspend-carousel">
-                {SIP_SPEND_DRINKS.map((drink, index) => (
+                <button
+                  type="button"
+                  className="sipspend-carousel-action sipspend-carousel-action--add"
+                  onClick={() => setSheetView('custom')}
+                  aria-label="Add custom drink"
+                >
+                  <span className="sipspend-carousel-action-icon" aria-hidden>+</span>
+                  <span className="sipspend-carousel-action-label">Custom</span>
+                </button>
+
+                {visibleDrinks.map((drink, index) => (
                   <button
                     key={drink.id}
                     type="button"
+                    data-drink={drink.id}
                     className={`sipspend-coffee-card${selectedIndex === index ? ' cup-active' : ''}`}
                     onClick={() => selectCoffee(index)}
                   >
                     <div className="sipspend-cup-wrap">
-                      <CoffeeCupIcon index={index} />
+                      <CupStickerImage src={drink.sticker} alt={drink.name} />
+                      {drink.id === 'latte' && <StarSticker />}
                     </div>
-                    <h3>{drink.name}</h3>
-                    <span className="sipspend-coffee-price">{formatPrice(drink.basePrice)}</span>
+                    <div className="sipspend-coffee-meta">
+                      <h3>{drink.name}</h3>
+                      <span className="sipspend-coffee-price">{formatPrice(drink.basePrice)}</span>
+                    </div>
                   </button>
                 ))}
+
+                <button
+                  type="button"
+                  className="sipspend-carousel-action sipspend-carousel-action--edit"
+                  onClick={() => setSheetView('edit-list')}
+                  aria-label="Edit drink list"
+                >
+                  <span className="sipspend-carousel-action-icon" aria-hidden>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h10" />
+                    </svg>
+                  </span>
+                  <span className="sipspend-carousel-action-label">Edit List</span>
+                </button>
               </div>
             </section>
 
@@ -326,7 +690,7 @@ export default function QuickLogSheet({ onClose, onSaved }) {
                   </button>
                   <div className="sipspend-price-display">
                     <span className="currency">€</span>
-                    <span className="amount">{formatAmount(price)}</span>
+                    <TallyAmount value={price} />
                   </div>
                   <button
                     type="button"
@@ -346,14 +710,22 @@ export default function QuickLogSheet({ onClose, onSaved }) {
                 <span>3. Pick Size</span>
                 <span className="sipspend-carousel-indicator">Slide to resize</span>
               </div>
-              <SizeSlider value={sizeLabel} onChange={setSizeLabel} />
+              <SizeSlider
+                value={sizeLabel}
+                onChange={setSizeLabel}
+                drinkSticker={selected.sticker}
+              />
             </section>
 
             <section className="sipspend-section">
               <div className="sipspend-section-label">
                 <span>4. Where?</span>
-                {!useCurrentLocation && cafeName.trim() && (
-                  <span className="sipspend-carousel-indicator">{cafeName.trim()}</span>
+                {useCurrentLocation ? (
+                  <span className="sipspend-carousel-indicator">{currentLocationLabel}</span>
+                ) : (
+                  cafeName.trim() && (
+                    <span className="sipspend-carousel-indicator">{cafeName.trim()}</span>
+                  )
                 )}
               </div>
 
@@ -383,7 +755,12 @@ export default function QuickLogSheet({ onClose, onSaved }) {
                         onClick={() => setUseCurrentLocation(false)}
                       >
                         <span className="add-coffee-row-icon"><PinIcon size="sm" /></span>
-                        <span className="sipspend-current-location-label">Use current location</span>
+                        <span className="sipspend-current-location-copy">
+                          <span className="sipspend-current-location-label">{currentLocationLabel}</span>
+                          {currentLocationSubtitle && (
+                            <span className="sipspend-current-location-sub">{currentLocationSubtitle}</span>
+                          )}
+                        </span>
                         <span className="cafe-search-check" aria-hidden>✓</span>
                       </button>
                     </div>
@@ -422,16 +799,18 @@ export default function QuickLogSheet({ onClose, onSaved }) {
               type="button"
               className="sipspend-log-btn"
               onClick={logCurrentCoffee}
-              disabled={saving}
+              disabled={saving || !selected}
             >
               <svg fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
               </svg>
               <span>
-                {saving ? 'Logging…' : `Log ${selected.name} (${formatPrice(price)})`}
+                {saving ? 'Logging…' : `Log ${selected?.name ?? 'Drink'} (${formatPrice(price)})`}
               </span>
             </button>
           </div>
+            </>
+          )}
         </div>
       </div>
 

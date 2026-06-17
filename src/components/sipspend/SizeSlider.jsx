@@ -1,41 +1,62 @@
+import { useEffect, useRef, useState } from 'react'
 import { SIZE_OPTIONS, getSizeOption } from '../../data/cupOptions'
 
 const SIZE_SHORT = ['S', 'M', 'L', 'XL']
 
-export default function SizeSlider({ value, onChange }) {
+export default function SizeSlider({ value, onChange, drinkSticker }) {
   const index = Math.max(0, SIZE_OPTIONS.findIndex((s) => s.id === value))
   const selected = getSizeOption(value) ?? SIZE_OPTIONS[1]
   const fillPercent = (index / (SIZE_OPTIONS.length - 1)) * 100
+  const MIN_SCALE = 0.5
+  const MAX_SCALE = 1.2
+  const sizeScale =
+    MIN_SCALE + (index / (SIZE_OPTIONS.length - 1)) * (MAX_SCALE - MIN_SCALE)
+  const [drinkSettling, setDrinkSettling] = useState(false)
+  const prevSticker = useRef(drinkSticker)
+
+  useEffect(() => {
+    if (prevSticker.current === drinkSticker) return
+    prevSticker.current = drinkSticker
+    setDrinkSettling(true)
+    const timer = setTimeout(() => setDrinkSettling(false), 520)
+    return () => clearTimeout(timer)
+  }, [drinkSticker])
 
   function handleChange(e) {
     const nextIndex = Number(e.target.value)
     onChange(SIZE_OPTIONS[nextIndex].id)
   }
 
+  function selectSize(sizeId) {
+    onChange(sizeId)
+  }
+
   return (
     <div className="sipspend-size-box">
-      <div className="sipspend-size-visual" aria-hidden>
-        <div
-          className="sipspend-size-cup"
-          style={{ transform: `scale(${0.72 + selected.multiplier * 0.22})` }}
-        >
-          <svg viewBox="0 0 48 56" fill="none">
-            <path
-              d="M10 18 H38 L34 46 C33 50 29 52 24 52 C19 52 15 50 14 46 Z"
-              fill="#F0ECE6"
-              stroke="#2C2520"
-              strokeWidth="2"
-              strokeLinejoin="round"
-            />
-            <ellipse cx="24" cy="20" rx="12" ry="3" fill="#C5A880" />
-            <path d="M38 22 C44 22 45 34 37 36" stroke="#2C2520" strokeWidth="2.5" strokeLinecap="round" />
-          </svg>
+      <div className="sipspend-size-hero">
+        <div className="sipspend-size-visual" aria-hidden>
+          <div
+            className="sipspend-size-cup"
+            style={{ transform: `scale(${sizeScale})` }}
+          >
+            <div
+              className={`sipspend-size-sticker-wrap${drinkSettling ? ' sipspend-size-sticker-wrap--settle' : ''}`}
+            >
+              <img
+                key={drinkSticker}
+                src={drinkSticker}
+                alt=""
+                className="sipspend-size-sticker"
+                draggable={false}
+              />
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div className="sipspend-size-readout">
-        <span className="sipspend-size-name">{selected.label}</span>
-        <span className="sipspend-size-detail">{selected.volumeMl} ml est.</span>
+        <div className="sipspend-size-readout">
+          <span className="sipspend-size-name">{selected.label}</span>
+          <span className="sipspend-size-detail">{selected.volumeMl} ml est.</span>
+        </div>
       </div>
 
       <div className="sipspend-size-track-wrap">
@@ -59,7 +80,7 @@ export default function SizeSlider({ value, onChange }) {
               key={size.id}
               type="button"
               className={`sipspend-size-tick${i === index ? ' active' : ''}`}
-              onClick={() => onChange(size.id)}
+              onClick={() => selectSize(size.id)}
             >
               <span className="sipspend-size-tick-dot" />
               <span className="sipspend-size-tick-label">{SIZE_SHORT[i]}</span>

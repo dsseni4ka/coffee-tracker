@@ -118,3 +118,83 @@ export function CoffeeCupIcon({ index, className = '' }) {
   const Cup = CUP_COMPONENTS[index] ?? CappuccinoCup
   return <Cup className={className} />
 }
+
+export function CupStickerImage({ src, alt, className = '' }) {
+  return (
+    <img
+      className={`sipspend-drink-sticker${className ? ` ${className}` : ''}`}
+      src={src}
+      alt={alt}
+      draggable={false}
+    />
+  )
+}
+
+export function StarSticker({ className = '' }) {
+  return (
+    <svg
+      className={`sipspend-star-sticker${className ? ` ${className}` : ''}`}
+      viewBox="0 0 48 48"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path
+        d="M24 4.8l4.9 9.9 10.9 1.6-7.9 7.7 1.9 10.9L24 29.6l-9.8 5.4 1.9-10.9-7.9-7.7 10.9-1.6L24 4.8z"
+        fill="url(#starStickerFill)"
+        stroke="#FFFFFF"
+        strokeWidth="3.6"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+        paintOrder="stroke fill"
+      />
+      <ellipse cx="18.5" cy="16" rx="3.8" ry="2.8" fill="#FFFFFF" opacity="0.62" transform="rotate(-22 18.5 16)" />
+      <circle cx="31.5" cy="13.5" r="1.3" fill="#FFFFFF" opacity="0.75" />
+      <circle cx="34.5" cy="18" r="0.85" fill="#FFF4C2" opacity="0.9" />
+      <path
+        d="M11 11l1.8 1.8M37 9l-1.5 1.8"
+        stroke="#FFD866"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        opacity="0.85"
+      />
+      <defs>
+        <linearGradient id="starStickerFill" x1="10" y1="6" x2="38" y2="38" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#FFE98A" />
+          <stop offset="50%" stopColor="#F5C842" />
+          <stop offset="100%" stopColor="#E8A838" />
+        </linearGradient>
+      </defs>
+    </svg>
+  )
+}
+
+export function HeartSticker({ className = '' }) {
+  return (
+    <svg
+      className={`sipspend-heart-sticker${className ? ` ${className}` : ''}`}
+      viewBox="0 0 48 48"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path
+        d="M24 40.5s-14.5-9.2-14.5-18.8C9.5 14.8 13.6 11 18.4 11c2.8 0 5.3 1.4 6.6 3.6.3.5 1.1.5 1.4 0 1.3-2.2 3.8-3.6 6.6-3.6 4.8 0 8.9 3.8 8.9 10.7C36.5 31.3 24 40.5 24 40.5z"
+        fill="url(#heartStickerFill)"
+        stroke="#2C2520"
+        strokeWidth="2.25"
+        strokeLinejoin="round"
+      />
+      <ellipse cx="17.5" cy="18" rx="4" ry="3.2" fill="#FFFFFF" opacity="0.55" transform="rotate(-18 17.5 18)" />
+      <circle cx="33" cy="15" r="1.4" fill="#FFFFFF" opacity="0.7" />
+      <circle cx="36.5" cy="19.5" r="0.9" fill="#FFD4D4" opacity="0.85" />
+      <defs>
+        <linearGradient id="heartStickerFill" x1="12" y1="10" x2="36" y2="38" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#FFB8B8" />
+          <stop offset="55%" stopColor="#F08080" />
+          <stop offset="100%" stopColor="#E85D6A" />
+        </linearGradient>
+      </defs>
+    </svg>
+  )
+}

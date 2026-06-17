@@ -1,3 +1,4 @@
+import PhoneLinkCard from './PhoneLinkCard'
 import UsernameLabel from './UsernameLabel'
 import { LANGUAGES, useLanguage } from '../hooks/useLanguage'
 import { useProfile } from '../hooks/useProfile'
@@ -70,6 +71,8 @@ export default function SettingsSheet({ onClose }) {
               </button>
             ))}
           </div>
+
+          <PhoneLinkCard />
         </div>
       </div>
     </div>

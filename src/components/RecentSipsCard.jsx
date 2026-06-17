@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { formatDistanceToNow, startOfWeek } from 'date-fns'
+import { WEEK_OPTIONS } from '../utils/calendarWeek'
 import { SIP_SPEND_DRINKS } from '../data/sipSpendDrinks'
 import { formatPrice } from '../utils/format'
 import { deleteDrink, deleteDrinks, getDrinksSince } from '../db/database'
@@ -18,7 +19,7 @@ function drinkLabel(drink) {
 
 export default function RecentSipsCard({ refreshKey = 0, onChanged }) {
   const [weekDrinks, setWeekDrinks] = useState([])
-  const weekStart = useMemo(() => startOfWeek(new Date(), { weekStartsOn: 0 }).getTime(), [])
+  const weekStart = useMemo(() => startOfWeek(new Date(), WEEK_OPTIONS).getTime(), [])
 
   const load = useCallback(async () => {
     const drinks = await getDrinksSince(weekStart)
@@ -57,7 +58,7 @@ export default function RecentSipsCard({ refreshKey = 0, onChanged }) {
         {weekDrinks.length === 0 ? (
           <div className="sipspend-logs-empty">No coffee logged yet this week.</div>
         ) : (
-          weekDrinks.slice(0, 5).map((log) => (
+          weekDrinks.slice(0, 3).map((log) => (
             <div key={log.id} className="sipspend-log-item">
               <div className="sipspend-log-left">
                 <div className="sipspend-log-icon">

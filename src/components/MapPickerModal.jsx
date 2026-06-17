@@ -60,7 +60,14 @@ export default function MapPickerModal({ initialLat, initialLng, onConfirm, onCl
         </div>
         <p className="map-picker-hint">Tap the map to drop a pin where you had your coffee.</p>
         <div className="map-picker-map">
-          <MapContainer center={center} zoom={14} scrollWheelZoom className="map-picker-leaflet" style={{ height: '100%', width: '100%' }}>
+          <MapContainer
+            center={center}
+            zoom={14}
+            scrollWheelZoom
+            zoomControl={false}
+            className="map-picker-leaflet"
+            style={{ height: '100%', width: '100%' }}
+          >
             <TileLayer
               attribution={MAP_TILES.attribution}
               url={MAP_TILES.url}
