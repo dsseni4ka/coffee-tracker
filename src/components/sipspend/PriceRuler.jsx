@@ -1,5 +1,6 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from 'react'
 import { PRICE_RULER } from '../../data/sipSpendDrinks'
+import { useAxisLockGesture } from '../../hooks/useAxisLockGesture'
 
 const { start: START_PRICE, end: END_PRICE, interval: INTERVAL, stepWidth: STEP_WIDTH } = PRICE_RULER
 const TOTAL_STEPS = Math.round((END_PRICE - START_PRICE) / INTERVAL)
@@ -22,6 +23,7 @@ const PriceRuler = forwardRef(function PriceRuler({ price, onPriceChange }, ref)
   const scrollRef = useRef(null)
   const isDragging = useRef(false)
   const dragStart = useRef({ x: 0, scrollLeft: 0 })
+  const { onPointerDown } = useAxisLockGesture()
 
   const scrollToPrice = useCallback((targetPrice, smooth = true) => {
     const el = scrollRef.current
@@ -79,7 +81,7 @@ const PriceRuler = forwardRef(function PriceRuler({ price, onPriceChange }, ref)
   }
 
   return (
-    <div className="sipspend-ruler-wrap">
+    <div className="sipspend-ruler-wrap" onPointerDown={onPointerDown}>
       <div className="sipspend-ruler-needle" aria-hidden />
       <div
         ref={scrollRef}

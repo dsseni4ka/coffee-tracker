@@ -1,7 +1,6 @@
 /* Budget analytics page */
 
 .budget-page {
-  padding: var(--space-md) var(--space-md) calc(var(--nav-height) + var(--nav-float-gap) + var(--safe-bottom) + var(--space-lg));
   max-width: 480px;
   margin: 0 auto;
 }
@@ -149,20 +148,7 @@
 .budget-summary-row-left {
   display: flex;
   align-items: center;
-  gap: 12px;
   min-width: 0;
-}
-
-.budget-summary-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-full);
-  background: var(--color-surface-soft);
-  color: var(--color-text-secondary);
-  flex-shrink: 0;
 }
 
 .budget-summary-label {

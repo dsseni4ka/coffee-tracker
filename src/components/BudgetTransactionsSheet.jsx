@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import BudgetTransactionItem from './BudgetTransactionItem'
 
-const DISMISS_THRESHOLD = 72
+const DISMISS_THRESHOLD = 36
+const VELOCITY_THRESHOLD = 0.35
 const TAP_THRESHOLD = 8
 
 export default function BudgetTransactionsSheet({ title, transactions, onClose }) {
@@ -11,6 +12,9 @@ export default function BudgetTransactionsSheet({ title, transactions, onClose }
   const bodyRef = useRef(null)
   const dragStartY = useRef(0)
   const dragY = useRef(0)
+  const dragVelocityY = useRef(0)
+  const dragLastMoveY = useRef(0)
+  const dragLastMoveTime = useRef(0)
   const draggingRef = useRef(false)
   const dragFromBodyRef = useRef(false)
 
@@ -33,13 +37,20 @@ export default function BudgetTransactionsSheet({ title, transactions, onClose }
 
   function finishSheetDrag() {
     const moved = dragY.current
+    const velocity = dragVelocityY.current
     const fromBody = dragFromBodyRef.current
     dragY.current = 0
+    dragVelocityY.current = 0
+    dragLastMoveY.current = 0
+    dragLastMoveTime.current = 0
     draggingRef.current = false
     dragFromBodyRef.current = false
     setSheetDragging(false)
 
-    if (moved > DISMISS_THRESHOLD || (!fromBody && moved <= TAP_THRESHOLD)) {
+    const flickedDown = velocity >= VELOCITY_THRESHOLD
+    const draggedEnough = moved >= DISMISS_THRESHOLD
+
+    if (draggedEnough || flickedDown || (!fromBody && moved <= TAP_THRESHOLD)) {
       onClose()
       return
     }
@@ -48,8 +59,12 @@ export default function BudgetTransactionsSheet({ title, transactions, onClose }
   }
 
   function beginSheetDrag(clientY, fromBody = false) {
+    const now = Date.now()
     dragStartY.current = clientY
     dragY.current = 0
+    dragVelocityY.current = 0
+    dragLastMoveY.current = clientY
+    dragLastMoveTime.current = now
     draggingRef.current = true
     dragFromBodyRef.current = fromBody
     setSheetDragging(true)
@@ -57,6 +72,13 @@ export default function BudgetTransactionsSheet({ title, transactions, onClose }
 
   function moveSheetDrag(clientY) {
     if (!draggingRef.current) return
+    const now = Date.now()
+    const dt = now - dragLastMoveTime.current
+    if (dt > 0) {
+      dragVelocityY.current = (clientY - dragLastMoveY.current) / dt
+    }
+    dragLastMoveY.current = clientY
+    dragLastMoveTime.current = now
     const delta = Math.max(0, clientY - dragStartY.current)
     dragY.current = delta
     setSheetOffset(delta)
@@ -92,6 +114,7 @@ export default function BudgetTransactionsSheet({ title, transactions, onClose }
     } else if (delta < 0) {
       draggingRef.current = false
       dragFromBodyRef.current = false
+      dragVelocityY.current = 0
       setSheetDragging(false)
       setSheetOffset(0)
     }

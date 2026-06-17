@@ -649,7 +649,7 @@
   padding-left: 50%;
   padding-right: 50%;
   scroll-snap-type: x mandatory;
-  touch-action: pan-x;
+  touch-action: manipulation;
   overscroll-behavior-x: contain;
   user-select: none;
   -webkit-user-select: none;
@@ -1262,7 +1262,7 @@
   position: relative;
   overflow: visible;
   padding: var(--size-track-shadow-pad) 4px 28px;
-  touch-action: pan-x;
+  touch-action: manipulation;
 }
 
 .sipspend-size-track-bg {
@@ -1295,6 +1295,7 @@
   -webkit-appearance: none;
   appearance: none;
   cursor: pointer;
+  touch-action: pan-y;
 }
 
 .sipspend-size-range:focus {

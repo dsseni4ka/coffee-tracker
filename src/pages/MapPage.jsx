@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
-import { addMonths, format, startOfMonth, subMonths } from 'date-fns'
+import { format } from 'date-fns'
 import { getAllDrinks, getDrinksWithLocation } from '../db/database'
 import { getDrinkType } from '../data/drinkTypes'
 import { MapController, MapFocusController, MapLocateBridge } from '../components/MapController'
@@ -16,7 +16,6 @@ import { getCurrentPosition, searchNearbyCafes } from '../utils/nearbyCafeSearch
 import { computeFavoriteCafes } from '../utils/favoriteCafes'
 import { MAP_SHOWCASE_FAVORITE } from '../data/mapShowcaseFavorite'
 import MapFeaturedDrinks from '../components/MapFeaturedDrinks'
-import { ChevronLeftIcon, ChevronRightIcon } from '../components/icons/NavIcons'
 
 const DEFAULT_CENTER = [52.3676, 4.9041]
 const DEFAULT_ZOOM = 14
@@ -106,7 +105,6 @@ export default function MapPage() {
   const [selectedCafeId, setSelectedCafeId] = useState(null)
   const [mapFocus, setMapFocus] = useState(null)
   const [mapMounted, setMapMounted] = useState(false)
-  const [month, setMonth] = useState(() => startOfMonth(new Date()))
 
   useEffect(() => {
     setMapMounted(true)
@@ -230,33 +228,6 @@ export default function MapPage() {
 
   return (
     <div className="map-page">
-      <header className="calendar-hero">
-        <div className="calendar-month-nav">
-          <button
-            type="button"
-            className="calendar-month-nav-btn"
-            onClick={() => setMonth((m) => subMonths(m, 1))}
-            aria-label="Previous month"
-          >
-            <ChevronLeftIcon size="sm" />
-          </button>
-
-          <div className="calendar-month-label">
-            <h1>{format(month, 'MMMM yyyy')}</h1>
-            <p>Where you have been drinking coffee</p>
-          </div>
-
-          <button
-            type="button"
-            className="calendar-month-nav-btn"
-            onClick={() => setMonth((m) => addMonths(m, 1))}
-            aria-label="Next month"
-          >
-            <ChevronRightIcon size="sm" />
-          </button>
-        </div>
-      </header>
-
       <div ref={mapCardRef} className="map-page-card card">
         {mapMounted && (
           <MapContainer

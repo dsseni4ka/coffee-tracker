@@ -1,6 +1,5 @@
 import PhoneLinkCard from './PhoneLinkCard'
 import UsernameLabel from './UsernameLabel'
-import { LANGUAGES, useLanguage } from '../hooks/useLanguage'
 import { useProfile } from '../hooks/useProfile'
 import { useTheme } from '../hooks/useTheme'
 
@@ -11,7 +10,6 @@ const THEMES = [
 
 export default function SettingsSheet({ onClose }) {
   const { username, setUsername } = useProfile()
-  const [language, setLanguage] = useLanguage()
   const [theme, setTheme] = useTheme()
 
   return (
@@ -42,20 +40,6 @@ export default function SettingsSheet({ onClose }) {
               <span className="settings-profile-label">Display name</span>
               <UsernameLabel username={username} onSave={setUsername} />
             </div>
-          </div>
-
-          <label className="add-coffee-field-label">Language</label>
-          <div className="add-coffee-pill-group settings-pill-group">
-            {LANGUAGES.map((lang) => (
-              <button
-                key={lang.id}
-                type="button"
-                className={`add-coffee-pill${language === lang.id ? ' selected' : ''}`}
-                onClick={() => setLanguage(lang.id)}
-              >
-                {lang.label}
-              </button>
-            ))}
           </div>
 
           <label className="add-coffee-field-label">Theme</label>

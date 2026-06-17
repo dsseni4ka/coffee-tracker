@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { SIZE_OPTIONS, getSizeOption } from '../../data/cupOptions'
+import { useAxisLockGesture } from '../../hooks/useAxisLockGesture'
 
 const SIZE_SHORT = ['S', 'M', 'L', 'XL']
 const STICKER_BASE_PX = 64
@@ -18,42 +19,6 @@ function preserveSheetScroll(run) {
   })
 }
 
-function useSheetScrollLock() {
-  const lockRef = useRef(null)
-
-  const unlock = useCallback(() => {
-    if (!lockRef.current) return
-    lockRef.current.el.removeEventListener('scroll', lockRef.current.fix)
-    window.removeEventListener('pointerup', lockRef.current.onUp)
-    window.removeEventListener('pointercancel', lockRef.current.onUp)
-    lockRef.current = null
-  }, [])
-
-  const lock = useCallback(() => {
-    const el = document.querySelector('.sipspend-body')
-    if (!el) return
-
-    unlock()
-
-    const top = el.scrollTop
-    const fix = () => {
-      el.scrollTop = top
-    }
-    const onUp = () => {
-      window.setTimeout(unlock, 320)
-    }
-
-    el.addEventListener('scroll', fix, { passive: true })
-    window.addEventListener('pointerup', onUp)
-    window.addEventListener('pointercancel', onUp)
-    lockRef.current = { el, fix, onUp }
-  }, [unlock])
-
-  useEffect(() => () => unlock(), [unlock])
-
-  return { lock }
-}
-
 export default function SizeSlider({ value, onChange, drinkSticker }) {
   const index = Math.max(0, SIZE_OPTIONS.findIndex((s) => s.id === value))
   const selected = getSizeOption(value) ?? SIZE_OPTIONS[1]
@@ -63,7 +28,7 @@ export default function SizeSlider({ value, onChange, drinkSticker }) {
   const stickerSize = STICKER_BASE_PX * sizeScale
   const [drinkSettling, setDrinkSettling] = useState(false)
   const prevSticker = useRef(drinkSticker)
-  const { lock } = useSheetScrollLock()
+  const { onPointerDown } = useAxisLockGesture()
 
   useEffect(() => {
     if (prevSticker.current === drinkSticker) return
@@ -82,7 +47,7 @@ export default function SizeSlider({ value, onChange, drinkSticker }) {
   }
 
   return (
-    <div className="sipspend-size-box" onPointerDown={lock}>
+    <div className="sipspend-size-box">
       <div className="sipspend-size-hero">
         <div className="sipspend-size-visual" aria-hidden>
           <div className="sipspend-size-stage">
@@ -111,7 +76,7 @@ export default function SizeSlider({ value, onChange, drinkSticker }) {
         </div>
       </div>
 
-      <div className="sipspend-size-track-wrap">
+      <div className="sipspend-size-track-wrap" onPointerDown={onPointerDown}>
         <div className="sipspend-size-track-bg">
           <div className="sipspend-size-track-fill" style={{ width: `${fillPercent}%` }} />
         </div>

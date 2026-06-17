@@ -1,15 +1,23 @@
 import { useState } from 'react'
-import { SettingsIcon, StatsIcon } from './icons/NavIcons'
+import { useLocation } from 'react-router-dom'
+import { SettingsIcon } from './icons/NavIcons'
 import SettingsSheet from './SettingsSheet'
-import StatsSheet from './StatsSheet'
+
+function getPageTitle(pathname) {
+  if (pathname.startsWith('/map')) return 'Map'
+  if (pathname.startsWith('/profile')) return 'Budget'
+  return 'Calendar'
+}
 
 export default function AppTopBar() {
+  const { pathname } = useLocation()
   const [showSettings, setShowSettings] = useState(false)
-  const [showStats, setShowStats] = useState(false)
+  const pageTitle = getPageTitle(pathname)
 
   return (
     <>
       <div className="app-topbar" aria-label="App actions">
+        <h1 className="app-topbar-title">{pageTitle}</h1>
         <button
           type="button"
           className="app-topbar-btn"
@@ -18,18 +26,9 @@ export default function AppTopBar() {
         >
           <SettingsIcon size="sm" />
         </button>
-        <button
-          type="button"
-          className="app-topbar-btn app-topbar-btn--stats"
-          aria-label="Coffee statistics"
-          onClick={() => setShowStats(true)}
-        >
-          <StatsIcon size="sm" />
-        </button>
       </div>
 
       {showSettings && <SettingsSheet onClose={() => setShowSettings(false)} />}
-      {showStats && <StatsSheet onClose={() => setShowStats(false)} />}
     </>
   )
 }

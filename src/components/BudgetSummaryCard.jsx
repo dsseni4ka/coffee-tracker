@@ -6,32 +6,6 @@ import TallyAmount from './sipspend/TallyAmount'
 
 const WEEKLY_PRESETS = [25, 40, 50, 75, 100]
 
-function PieIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
-    </svg>
-  )
-}
-
-function CoinsIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-2.21 0-4 1.12-4 2.5S9.79 13 12 13s4-1.12 4-2.5S14.21 8 12 8z" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 10.5C6 8.57 8.69 7 12 7s6 1.57 6 3.5M6 14.5c0 1.93 2.69 3.5 6 3.5s6-1.57 6-3.5M6 18.5c0 1.93 2.69 3.5 6 3.5s6-1.57 6-3.5" />
-    </svg>
-  )
-}
-
-function GaugeIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6l3 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-  )
-}
-
 function PencilIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
@@ -58,9 +32,6 @@ export default function BudgetSummaryCard({
       <div className="budget-summary-card">
         <div className="budget-summary-row">
           <div className="budget-summary-row-left">
-            <span className="budget-summary-icon" aria-hidden>
-              <PieIcon />
-            </span>
             <span className="budget-summary-label">Budget</span>
           </div>
           <button
@@ -76,9 +47,6 @@ export default function BudgetSummaryCard({
 
         <div className="budget-summary-row">
           <div className="budget-summary-row-left">
-            <span className="budget-summary-icon" aria-hidden>
-              <CoinsIcon />
-            </span>
             <div>
               <span className="budget-summary-label">Spent this week</span>
               <span className="budget-summary-sublabel">
@@ -94,9 +62,6 @@ export default function BudgetSummaryCard({
 
         <div className="budget-summary-row">
           <div className="budget-summary-row-left">
-            <span className="budget-summary-icon" aria-hidden>
-              <GaugeIcon />
-            </span>
             <span className="budget-summary-label">Left to spend</span>
           </div>
           <div className="budget-summary-value-stack">

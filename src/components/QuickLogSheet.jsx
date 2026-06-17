@@ -4,6 +4,7 @@ import {
   PRICE_RULER,
 } from '../data/sipSpendDrinks'
 import { useSipSpendDrinks } from '../hooks/useSipSpendDrinks'
+import { useAxisLockGesture } from '../hooks/useAxisLockGesture'
 import { addDrink, getAllDrinks } from '../db/database'
 import { computeFavoriteCafes } from '../utils/favoriteCafes'
 import { formatAmount, formatPrice } from '../utils/format'
@@ -26,6 +27,18 @@ const CAROUSEL_CENTER_SCALE = 1.3
 const CAROUSEL_EDGE_SCALE = 0.78
 const CAROUSEL_SCROLL_END_MS = 120
 const CAROUSEL_SETTLE_DELAY_MS = 500
+
+function preserveSheetScroll(run) {
+  const body = document.querySelector('.sipspend-body')
+  const top = body?.scrollTop ?? 0
+  run()
+  requestAnimationFrame(() => {
+    if (body) body.scrollTop = top
+    requestAnimationFrame(() => {
+      if (body) body.scrollTop = top
+    })
+  })
+}
 
 function getCarouselScrollBounds(carousel) {
   const cards = carousel.querySelectorAll('.sipspend-coffee-card')
@@ -100,6 +113,7 @@ export default function QuickLogSheet({
   const sheetDragY = useRef(0)
   const sheetDraggingRef = useRef(false)
   const pendingSelectId = useRef(null)
+  const { onPointerDown: onLocationChipsPointerDown } = useAxisLockGesture()
 
   const selected = visibleDrinks[selectedIndex] ?? visibleDrinks[0]
 
@@ -415,10 +429,12 @@ export default function QuickLogSheet({
   }
 
   function selectQuickLocation(loc) {
-    setUseCurrentLocation(false)
-    setCafeName(loc.name)
-    setLat(loc.lat ?? null)
-    setLng(loc.lng ?? null)
+    preserveSheetScroll(() => {
+      setUseCurrentLocation(false)
+      setCafeName(loc.name)
+      setLat(loc.lat ?? null)
+      setLng(loc.lng ?? null)
+    })
   }
 
   async function logCurrentCoffee() {
@@ -682,7 +698,11 @@ export default function QuickLogSheet({
 
               <div className="sipspend-location-box">
                 {quickLocations.length > 0 && !useCurrentLocation && (
-                  <div className="sipspend-location-chips" role="list">
+                  <div
+                    className="sipspend-location-chips"
+                    role="list"
+                    onPointerDown={onLocationChipsPointerDown}
+                  >
                     {quickLocations.map((loc) => (
                       <button
                         key={loc.name}
@@ -703,7 +723,7 @@ export default function QuickLogSheet({
                       <button
                         type="button"
                         className="add-coffee-row-card add-coffee-location-input sipspend-current-location"
-                        onClick={() => setUseCurrentLocation(false)}
+                        onClick={() => preserveSheetScroll(() => setUseCurrentLocation(false))}
                       >
                         <span className="add-coffee-row-icon"><PinIcon size="sm" /></span>
                         <span className="sipspend-current-location-copy">
@@ -734,7 +754,7 @@ export default function QuickLogSheet({
                       <button
                         type="button"
                         className="sipspend-use-current-link"
-                        onClick={() => setUseCurrentLocation(true)}
+                        onClick={() => preserveSheetScroll(() => setUseCurrentLocation(true))}
                       >
                         Use current location
                       </button>
