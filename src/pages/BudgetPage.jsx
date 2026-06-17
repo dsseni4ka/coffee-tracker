@@ -9,7 +9,6 @@ import {
   subWeeks,
 } from 'date-fns'
 import { getAllDrinks } from '../db/database'
-import { getDrinkType } from '../data/drinkTypes'
 import { useBudget } from '../hooks/useBudget'
 import { formatPrice } from '../utils/format'
 import { getWeeklyBudgetMetrics } from '../utils/weeklyBudget'
@@ -17,10 +16,8 @@ import { formatWeekRange, WEEK_OPTIONS } from '../utils/calendarWeek'
 import BudgetGauge from '../components/BudgetGauge'
 import BudgetSummaryCard from '../components/BudgetSummaryCard'
 import BudgetRecentTransactions from '../components/BudgetRecentTransactions'
-import BudgetAmountKeypad from '../components/BudgetAmountKeypad'
 import BudgetWeekPicker from '../components/BudgetWeekPicker'
 import SpendingLineChart from '../components/charts/SpendingLineChart'
-import SpendingPieChart from '../components/charts/SpendingPieChart'
 import '../styles/budget.css'
 import '../styles/sipspend.css'
 
@@ -30,7 +27,7 @@ const CHART_PERIODS = [
 ]
 
 export default function BudgetPage() {
-  const { weeklyLimit, monthlyLimit, setWeeklyLimit, setMonthlyLimit } = useBudget()
+  const { weeklyLimit, monthlyLimit, setWeeklyLimit } = useBudget()
   const [drinks, setDrinks] = useState([])
   const [chartPeriod, setChartPeriod] = useState('week')
   const [weekOffset, setWeekOffset] = useState(0)
@@ -93,7 +90,6 @@ export default function BudgetPage() {
   const weekRangeLabel = useMemo(() => formatWeekRange(selectedWeek), [selectedWeek])
 
   const chartDrinks = chartPeriod === 'week' ? weekDrinks : monthDrinks
-  const chartBudgetLimit = chartPeriod === 'week' ? weeklyLimit : monthlyLimit
 
   const lineChartData = useMemo(() => {
     const days =
@@ -141,23 +137,6 @@ export default function BudgetPage() {
     })
   }, [chartDrinks, chartPeriod, today, selectedWeek, isCurrentWeek])
 
-  const pieSlices = useMemo(() => {
-    const byType = {}
-    for (const drink of chartDrinks) {
-      byType[drink.drinkType] = (byType[drink.drinkType] ?? 0) + (drink.price ?? 0)
-    }
-    return Object.entries(byType)
-      .map(([id, amount]) => ({
-        id,
-        label: getDrinkType(id)?.label ?? id,
-        amount,
-      }))
-      .filter((s) => s.amount > 0)
-      .sort((a, b) => b.amount - a.amount)
-  }, [chartDrinks])
-
-  const pieTotal = useMemo(() => pieSlices.reduce((s, slice) => s + slice.amount, 0), [pieSlices])
-
   const weekTransactions = useMemo(
     () => [...weekDrinks].sort((a, b) => b.timestamp - a.timestamp),
     [weekDrinks],
@@ -178,11 +157,11 @@ export default function BudgetPage() {
 
   return (
     <div className="budget-page">
-      <header className="budget-header">
-        <h1 className="page-title budget-page-title">Budget</h1>
+      <header className="calendar-hero budget-header">
         <BudgetWeekPicker
           selectedWeek={selectedWeek}
           isCurrentWeek={isCurrentWeek}
+          budgetState={weekMetrics.budgetState}
           onPreviousWeek={goToPreviousWeek}
           onNextWeek={goToNextWeek}
         />
@@ -211,23 +190,6 @@ export default function BudgetPage() {
         transactions={weekTransactions}
         weekRangeLabel={weekRangeLabel}
       />
-
-      <div className="budget-monthly-panel">
-        <h2 className="budget-section-title">Monthly budget</h2>
-        <div className="budget-monthly-stats">
-          <div className="budget-monthly-stat">
-            <span className="budget-monthly-stat-label">Spent</span>
-            <span className="budget-monthly-stat-value">{formatPrice(monthSpent)}</span>
-          </div>
-          <div className="budget-monthly-stat">
-            <span className="budget-monthly-stat-label">Remaining</span>
-            <span className={`budget-monthly-stat-value ${monthSpent > monthlyLimit ? 'danger' : ''}`}>
-              {formatPrice(Math.max(0, monthlyLimit - monthSpent))}
-            </span>
-          </div>
-        </div>
-        <BudgetAmountKeypad label="Monthly" value={monthlyLimit} onChange={setMonthlyLimit} period="monthly" />
-      </div>
 
       <div className="segmented">
         {CHART_PERIODS.map((p) => (
@@ -278,15 +240,6 @@ export default function BudgetPage() {
           data={lineChartData}
           budgetLimit={chartPeriod === 'week' ? weeklyLimit / 7 : monthlyLimit / 30}
           emptyLabel="Log coffee with prices to see your trend"
-        />
-      </div>
-
-      <div className="panel budget-chart-panel">
-        <h2 className="panel-title">By drink type</h2>
-        <SpendingPieChart
-          slices={pieSlices}
-          total={pieTotal}
-          emptyLabel="No priced drinks in this period"
         />
       </div>
     </div>

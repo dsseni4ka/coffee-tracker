@@ -31,7 +31,9 @@
   --space-lg: 24px;
   --space-xl: 32px;
 
-  --nav-height: 64px;
+  --nav-height: 56px;
+  --nav-float-gap: 12px;
+  --nav-float-inset: 20px;
   --fab-size: 56px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 

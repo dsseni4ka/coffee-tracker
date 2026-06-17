@@ -11,7 +11,7 @@ export default function BudgetRecentTransactions({ transactions, weekRangeLabel 
 
   return (
     <>
-      <section className="budget-recent">
+      <section className="budget-recent home-card budget-recent-card">
         <div className="budget-recent-header">
           <h2 className="budget-recent-title">Recent transactions</h2>
           {transactions.length > 0 && (
@@ -26,9 +26,9 @@ export default function BudgetRecentTransactions({ transactions, weekRangeLabel 
         </div>
 
         {preview.length === 0 ? (
-          <div className="budget-recent-empty">No transactions this week.</div>
+          <div className="sipspend-logs-empty budget-recent-empty">No transactions this week.</div>
         ) : (
-          <div className="budget-recent-list">
+          <div className="sipspend-logs recent-sips-logs budget-recent-list">
             {preview.map((log) => (
               <BudgetTransactionItem key={log.id} log={log} />
             ))}

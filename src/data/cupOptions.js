@@ -12,8 +12,6 @@ export const TEMPERATURE_OPTIONS = [
 
 export const SHARE_TARGETS = [
   { id: 'calendar', label: 'My calendar' },
-  { id: 'community', label: 'Community' },
-  { id: 'both', label: 'Both' },
 ]
 
 export function getSizeOption(id) {

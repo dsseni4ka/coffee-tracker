@@ -116,12 +116,27 @@ export default function QuickLogSheet({
 
   useEffect(() => {
     const main = document.querySelector('.app-main')
+    const savedScroll = main?.scrollTop ?? window.scrollY
+
+    function preventBackgroundTouchMove(e) {
+      const scrollable = e.target.closest(
+        '.sipspend-body, .sipspend-subview-body, .sipspend-carousel, .sipspend-ruler-scroll, .sipspend-location-chips, .sipspend-sticker-picker',
+      )
+      if (scrollable) return
+      e.preventDefault()
+    }
+
     main?.classList.add('app-main--scroll-locked')
     document.body.classList.add('sheet-scroll-locked')
+    document.documentElement.classList.add('sheet-scroll-locked')
+    document.addEventListener('touchmove', preventBackgroundTouchMove, { passive: false })
 
     return () => {
+      document.removeEventListener('touchmove', preventBackgroundTouchMove)
       main?.classList.remove('app-main--scroll-locked')
       document.body.classList.remove('sheet-scroll-locked')
+      document.documentElement.classList.remove('sheet-scroll-locked')
+      if (main) main.scrollTop = savedScroll
     }
   }, [])
 
@@ -523,6 +538,7 @@ export default function QuickLogSheet({
           role="dialog"
           aria-label={sheetAriaLabel}
         >
+          <div className="sipspend-sheet-inner">
           <button
             type="button"
             className="sipspend-sheet-handle-zone"
@@ -746,6 +762,7 @@ export default function QuickLogSheet({
           </div>
             </>
           )}
+          </div>
         </div>
       </div>
 

@@ -1,5 +1,6 @@
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { DRINK_STICKER_OPTIONS, PRICE_RULER } from '../../data/sipSpendDrinks'
+import { useCustomDrinkStickers } from '../../hooks/useCustomDrinkStickers'
 import { formatPrice } from '../../utils/format'
 import { CupStickerImage } from './CoffeeCupSvgs'
 import TallyAmount from './TallyAmount'
@@ -12,6 +13,13 @@ export default function CustomDrinkPanel({ onBack, onSave }) {
   const [price, setPrice] = useState(4.5)
   const [sticker, setSticker] = useState(DRINK_STICKER_OPTIONS[0].src)
   const rulerRef = useRef(null)
+  const stickerFileRef = useRef(null)
+  const { customStickers, addCustomSticker } = useCustomDrinkStickers()
+
+  const stickerOptions = useMemo(
+    () => [...DRINK_STICKER_OPTIONS, ...customStickers],
+    [customStickers],
+  )
 
   const trimmedName = name.trim()
   const canSave = trimmedName.length > 0 && price >= START_PRICE && price <= END_PRICE
@@ -25,6 +33,19 @@ export default function CustomDrinkPanel({ onBack, onSave }) {
   function handleSave() {
     if (!canSave) return
     onSave({ name: trimmedName, basePrice: price, sticker })
+  }
+
+  async function handleStickerUpload(e) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+
+    try {
+      const nextSticker = await addCustomSticker(file)
+      setSticker(nextSticker.src)
+    } catch {
+      /* ignore invalid uploads */
+    }
   }
 
   return (
@@ -53,8 +74,15 @@ export default function CustomDrinkPanel({ onBack, onSave }) {
         />
 
         <label className="add-coffee-field-label">Pick a sticker</label>
+        <input
+          ref={stickerFileRef}
+          type="file"
+          accept="image/*"
+          onChange={handleStickerUpload}
+          hidden
+        />
         <div className="sipspend-sticker-picker" role="listbox" aria-label="Drink sticker">
-          {DRINK_STICKER_OPTIONS.map((option) => (
+          {stickerOptions.map((option) => (
             <button
               key={option.id}
               type="button"
@@ -66,6 +94,16 @@ export default function CustomDrinkPanel({ onBack, onSave }) {
               <CupStickerImage src={option.src} alt={option.label} />
             </button>
           ))}
+          <button
+            type="button"
+            className="sipspend-sticker-option sipspend-sticker-option--add"
+            onClick={() => stickerFileRef.current?.click()}
+            aria-label="Add custom sticker"
+          >
+            <svg fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+          </button>
         </div>
 
         <label className="add-coffee-field-label">Default price</label>

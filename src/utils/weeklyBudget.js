@@ -16,6 +16,16 @@ export function getBudgetMetrics(totalSpent, limit) {
   return { budgetPercent, budgetState, budgetAlertText, limit, remaining, overBy, percentRemaining }
 }
 
+const BUDGET_STATUS_LABELS = {
+  safe: 'On track',
+  warn: 'Almost overspent',
+  danger: 'Overspent',
+}
+
+export function getBudgetStatusLabel(budgetState) {
+  return BUDGET_STATUS_LABELS[budgetState] ?? BUDGET_STATUS_LABELS.safe
+}
+
 export function getWeeklyBudgetMetrics(totalSpent, limit = WEEKLY_BUDGET_LIMIT) {
   return getBudgetMetrics(totalSpent, limit)
 }

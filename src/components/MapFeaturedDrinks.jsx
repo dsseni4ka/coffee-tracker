@@ -11,6 +11,7 @@ const FEATURED_DRINK_PLACEHOLDERS = [
     cafe: 'Blue Bottle',
     query: 'Blue Bottle Coffee',
     tag: 'Popular',
+    coverImage: '/featured/blue-bottle-cappuccino.png',
   },
   {
     id: 'featured-iced-latte',
@@ -18,6 +19,7 @@ const FEATURED_DRINK_PLACEHOLDERS = [
     cafe: 'Sightglass',
     query: 'Sightglass Coffee',
     tag: 'Seasonal',
+    coverImage: '/featured/sightglass-seasonal-latte.png',
   },
   {
     id: 'featured-flat-white',
@@ -25,6 +27,7 @@ const FEATURED_DRINK_PLACEHOLDERS = [
     cafe: 'Stumptown',
     query: 'Stumptown Coffee Roasters',
     tag: 'Staff pick',
+    coverImage: '/featured/stumptown-flat-white.png',
   },
   {
     id: 'featured-matcha',
@@ -32,6 +35,7 @@ const FEATURED_DRINK_PLACEHOLDERS = [
     cafe: 'La Colombe',
     query: 'La Colombe Coffee',
     tag: 'New',
+    coverImage: '/featured/la-colombe-matcha.png',
   },
 ]
 
@@ -46,12 +50,17 @@ function getCafeLogoLetter(name) {
 }
 
 function FeaturedDrinkCard({ item, drink, locationBias }) {
-  const { photoUrl, loading } = useCafePhoto({
-    name: item.cafe,
-    query: item.query,
-    lat: locationBias.lat,
-    lng: locationBias.lng,
-  })
+  const { photoUrl, loading } = useCafePhoto(
+    {
+      name: item.cafe,
+      query: item.query,
+      lat: locationBias.lat,
+      lng: locationBias.lng,
+    },
+    !item.coverImage,
+  )
+
+  const showCoverImage = Boolean(item.coverImage)
 
   return (
     <article className="home-card map-featured-card">
@@ -66,10 +75,20 @@ function FeaturedDrinkCard({ item, drink, locationBias }) {
           />
         ) : (
           <div
-            className={`map-featured-card-photo-fallback${loading ? ' map-featured-card-photo-fallback--loading' : ''}`}
+            className={`map-featured-card-photo-fallback${showCoverImage ? ' map-featured-card-photo-fallback--image' : ''}${loading ? ' map-featured-card-photo-fallback--loading' : ''}`}
             aria-hidden
           >
-            {getCafeLogoLetter(item.cafe)}
+            {showCoverImage ? (
+              <img
+                src={item.coverImage}
+                alt=""
+                className="map-featured-card-photo-img"
+                loading="lazy"
+                draggable={false}
+              />
+            ) : (
+              getCafeLogoLetter(item.cafe)
+            )}
           </div>
         )}
         <span className="map-featured-card-tag">{item.tag}</span>

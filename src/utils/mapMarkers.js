@@ -1,24 +1,39 @@
 import L from 'leaflet'
-import { getDrinkEmoji } from '../data/drinkTypes'
+import { getDrinkStickerSrc } from '../data/sipSpendDrinks'
+
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+export function getCafeLogoLetter(name) {
+  const cleaned = name.replace(/^[\p{Emoji_Presentation}\p{Extended_Pictographic}\s]+/u, '').trim()
+  const letter = cleaned[0]
+  return letter ? letter.toUpperCase() : 'C'
+}
 
 export function createCoffeeMarkerIcon(drinkType) {
-  const emoji = getDrinkEmoji(drinkType)
+  const src = getDrinkStickerSrc(drinkType)
   return L.divIcon({
     className: 'coffee-map-marker',
-    html: `<span class="map-poi-marker map-poi-marker--log" aria-hidden="true">${emoji}</span>`,
+    html: `<span class="map-poi-marker map-poi-marker--log" aria-hidden="true"><img src="${src}" alt="" class="map-poi-marker-sticker" draggable="false" /></span>`,
     iconSize: [36, 36],
     iconAnchor: [18, 18],
     popupAnchor: [0, -20],
   })
 }
 
-export function createNearbyCafeMarkerIcon() {
+export function createNearbyCafeMarkerIcon(cafeName) {
+  const letter = escapeHtml(getCafeLogoLetter(cafeName))
   return L.divIcon({
     className: 'coffee-map-marker nearby-cafe-marker',
-    html: `<span class="map-poi-marker map-poi-marker--cafe" aria-hidden="true">☕</span>`,
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
-    popupAnchor: [0, -18],
+    html: `<span class="map-poi-marker map-poi-marker--cafe" aria-hidden="true"><span class="map-poi-marker-logo">${letter}</span></span>`,
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
+    popupAnchor: [0, -20],
   })
 }
 

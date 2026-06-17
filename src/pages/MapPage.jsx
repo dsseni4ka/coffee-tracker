@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
-import { format } from 'date-fns'
+import { addMonths, format, startOfMonth, subMonths } from 'date-fns'
 import { getAllDrinks, getDrinksWithLocation } from '../db/database'
 import { getDrinkType } from '../data/drinkTypes'
 import { MapController, MapFocusController, MapLocateBridge } from '../components/MapController'
@@ -9,23 +9,19 @@ import {
   createCoffeeMarkerIcon,
   createNearbyCafeMarkerIcon,
   createUserLocationIcon,
+  getCafeLogoLetter,
   MAP_TILES,
 } from '../utils/mapMarkers'
 import { getCurrentPosition, searchNearbyCafes } from '../utils/nearbyCafeSearch'
 import { computeFavoriteCafes } from '../utils/favoriteCafes'
+import { MAP_SHOWCASE_FAVORITE } from '../data/mapShowcaseFavorite'
 import MapFeaturedDrinks from '../components/MapFeaturedDrinks'
+import { ChevronLeftIcon, ChevronRightIcon } from '../components/icons/NavIcons'
 
 const DEFAULT_CENTER = [52.3676, 4.9041]
 const DEFAULT_ZOOM = 14
 
-const nearbyCafeIcon = createNearbyCafeMarkerIcon()
 const userLocationIcon = createUserLocationIcon()
-
-function getCafeLogoLetter(name) {
-  const cleaned = name.replace(/^[\p{Emoji_Presentation}\p{Extended_Pictographic}\s]+/u, '').trim()
-  const letter = cleaned[0]
-  return letter ? letter.toUpperCase() : '☕'
-}
 
 function distanceMeters(lat1, lng1, lat2, lng2) {
   const R = 6371000
@@ -53,6 +49,22 @@ function getCafeListId(cafe) {
   return cafe.id ?? cafe.name
 }
 
+function CafeLogo({ cafe }) {
+  if (cafe.logo) {
+    return (
+      <div className="map-favorite-card-logo map-favorite-card-logo--image" aria-hidden>
+        <img src={cafe.logo} alt="" className="map-favorite-card-logo-img" draggable={false} />
+      </div>
+    )
+  }
+
+  return (
+    <div className="map-favorite-card-logo" aria-hidden>
+      {getCafeLogoLetter(cafe.name)}
+    </div>
+  )
+}
+
 function NearbyCafeMarker({ cafe, selected, icon }) {
   const markerRef = useRef(null)
 
@@ -66,7 +78,9 @@ function NearbyCafeMarker({ cafe, selected, icon }) {
     <Marker ref={markerRef} position={[cafe.lat, cafe.lng]} icon={icon}>
       <Popup>
         <div className="coffee-map-popup-inner">
-          <span className="coffee-map-popup-emoji">☕</span>
+          <span className="coffee-map-popup-logo" aria-hidden>
+            {getCafeLogoLetter(cafe.name)}
+          </span>
           <div>
             <strong>{cafe.name}</strong>
             <p>Café nearby</p>
@@ -92,6 +106,7 @@ export default function MapPage() {
   const [selectedCafeId, setSelectedCafeId] = useState(null)
   const [mapFocus, setMapFocus] = useState(null)
   const [mapMounted, setMapMounted] = useState(false)
+  const [month, setMonth] = useState(() => startOfMonth(new Date()))
 
   useEffect(() => {
     setMapMounted(true)
@@ -131,7 +146,12 @@ export default function MapPage() {
     }
   }, [])
 
-  const favoriteCafes = useMemo(() => computeFavoriteCafes(allDrinks), [allDrinks])
+  const favoriteCafes = useMemo(() => {
+    const computed = computeFavoriteCafes(allDrinks).filter(
+      (cafe) => cafe.name !== MAP_SHOWCASE_FAVORITE.name,
+    )
+    return [MAP_SHOWCASE_FAVORITE, ...computed]
+  }, [allDrinks])
 
   const nearbyCafesWithDistance = useMemo(() => {
     if (!userCenter) return nearbyCafes.map((cafe) => ({ ...cafe, distance: null }))
@@ -144,6 +164,14 @@ export default function MapPage() {
       }))
       .sort((a, b) => a.distance - b.distance)
   }, [nearbyCafes, userCenter])
+
+  const nearbyCafeIcons = useMemo(() => {
+    const icons = {}
+    for (const cafe of nearbyCafes) {
+      icons[cafe.id] = createNearbyCafeMarkerIcon(cafe.name)
+    }
+    return icons
+  }, [nearbyCafes])
 
   const handleCafeFocus = useCallback((cafe) => {
     if (cafe.lat == null || cafe.lng == null) return
@@ -202,8 +230,32 @@ export default function MapPage() {
 
   return (
     <div className="map-page">
-      <h1 className="page-title">Map</h1>
-      <p className="page-subtitle">Where you have been drinking coffee</p>
+      <header className="calendar-hero">
+        <div className="calendar-month-nav">
+          <button
+            type="button"
+            className="calendar-month-nav-btn"
+            onClick={() => setMonth((m) => subMonths(m, 1))}
+            aria-label="Previous month"
+          >
+            <ChevronLeftIcon size="sm" />
+          </button>
+
+          <div className="calendar-month-label">
+            <h1>{format(month, 'MMMM yyyy')}</h1>
+            <p>Where you have been drinking coffee</p>
+          </div>
+
+          <button
+            type="button"
+            className="calendar-month-nav-btn"
+            onClick={() => setMonth((m) => addMonths(m, 1))}
+            aria-label="Next month"
+          >
+            <ChevronRightIcon size="sm" />
+          </button>
+        </div>
+      </header>
 
       <div ref={mapCardRef} className="map-page-card card">
         {mapMounted && (
@@ -241,7 +293,7 @@ export default function MapPage() {
               <NearbyCafeMarker
                 key={cafe.id}
                 cafe={cafe}
-                icon={nearbyCafeIcon}
+                icon={nearbyCafeIcons[cafe.id]}
                 selected={selectedCafeId === cafe.id}
               />
             ))}
@@ -337,9 +389,7 @@ export default function MapPage() {
                   }`}
                   onClick={() => handleCafeFocus(cafe)}
                 >
-                  <div className="map-favorite-card-logo" aria-hidden>
-                    {getCafeLogoLetter(cafe.name)}
-                  </div>
+                  <CafeLogo cafe={cafe} />
                   <div className="map-favorite-card-body">
                     <h3 className="map-favorite-card-name">{cafe.name}</h3>
                     <p className="map-favorite-card-drink">
@@ -378,9 +428,7 @@ export default function MapPage() {
 
               return (
                 <CardTag key={cafe.name} {...cardProps}>
-                  <div className="map-favorite-card-logo" aria-hidden>
-                    {getCafeLogoLetter(cafe.name)}
-                  </div>
+                  <CafeLogo cafe={cafe} />
                   <div className="map-favorite-card-body">
                     <h3 className="map-favorite-card-name">{cafe.name}</h3>
                     {cafe.topDrink && (
