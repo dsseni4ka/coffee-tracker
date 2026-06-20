@@ -1,4 +1,4 @@
-# Coffee Tracker PWA
+# SipSpend PWA
 
 A mobile-first Progressive Web App for tracking coffee and matcha consumption, caffeine intake, brew locations, and sharing coffee moments.
 

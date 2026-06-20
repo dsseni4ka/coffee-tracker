@@ -42,6 +42,8 @@
   --color-tag-bg: var(--color-accent-soft);
   --color-tag-text: var(--color-accent-muted);
   --color-tag-border: color-mix(in srgb, var(--color-accent-muted) 22%, transparent);
+  --color-budget-chart: #61b1e3;
+  --color-budget-amount: var(--color-accent-muted);
 
   --color-nav-bg: color-mix(in srgb, var(--color-surface) 86%, transparent);
   --color-nav-border: color-mix(in srgb, var(--color-border-strong) 72%, transparent);
@@ -112,13 +114,15 @@
   --color-gradient-share-brown-end: #4a382e;
   --color-gradient-accent-start: #3d352c;
   --color-gradient-accent-end: var(--color-accent);
+  --color-budget-chart: #54e0c2;
+  --color-budget-amount: var(--color-accent-muted);
   --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.35);
   --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.28);
   --shadow-sticker: 0 2px 6px rgba(0, 0, 0, 0.35);
 }
 
 [data-theme='matcha'] {
-  --color-bg: #f4f4d6;
+  --color-bg: #eff3da;
   --color-surface: #f9f6e6;
   --color-surface-soft: #f5f0e0;
   --color-text: #1a4a20;
@@ -155,6 +159,8 @@
   --color-gradient-share-brown-end: #1a4a2e;
   --color-gradient-accent-start: #d4e8b8;
   --color-gradient-accent-end: var(--color-accent);
+  --color-budget-chart: #e653df;
+  --color-budget-amount: #c62dbe;
   --color-nav-bg: #f0cbee;
   --color-nav-border: #e5b5e0;
   --color-nav-indicator: color-mix(in srgb, #ffffff 55%, #f0cbee);

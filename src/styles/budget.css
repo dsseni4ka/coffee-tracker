@@ -11,6 +11,20 @@
   margin-bottom: 0;
 }
 
+.budget-header .calendar-month-label h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+  line-height: 1.2;
+}
+
+.budget-header .calendar-month-label .budget-week-status {
+  margin: 7px 0 0;
+}
+
 .budget-week-status {
   font-family: var(--font-sans);
   font-size: 0.75rem;
@@ -158,6 +172,10 @@
   color: var(--color-text);
 }
 
+.budget-summary-row:first-child .budget-summary-label {
+  font-size: calc(0.88rem + 2px);
+}
+
 .budget-summary-sublabel {
   display: block;
   font-size: 0.72rem;
@@ -171,7 +189,7 @@
   gap: 6px;
   font-size: 0.95rem;
   font-weight: 700;
-  color: var(--color-accent-muted);
+  color: var(--color-budget-amount);
   padding: 4px 8px;
   border-radius: var(--radius-sm);
   transition: background 0.15s ease;
@@ -849,7 +867,7 @@
 }
 
 .budget-chart-line {
-  stroke: var(--color-accent);
+  stroke: var(--color-budget-chart);
   stroke-width: 2.5;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -865,13 +883,13 @@
 }
 
 .budget-chart-dot {
-  fill: var(--color-accent);
+  fill: var(--color-budget-chart);
   stroke: var(--color-surface);
   stroke-width: 2;
 }
 
 .budget-chart-dot-halo {
-  fill: var(--color-accent);
+  fill: var(--color-budget-chart);
   opacity: 0;
   animation: budget-dot-pulse 2s ease-in-out infinite;
 }

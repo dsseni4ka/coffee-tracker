@@ -32,7 +32,7 @@ export default function CalendarHomePage() {
   const [showLog, setShowLog] = useState(false)
   const [sipRefresh, setSipRefresh] = useState(0)
   const [landingDrink, setLandingDrink] = useState(null)
-  const [monthNavDir, setMonthNavDir] = useState(null)
+  const [monthTransition, setMonthTransition] = useState(null)
   const weeklyCollageRef = useRef(null)
   const dayCollageRef = useRef(null)
   const selectedDayRef = useRef(null)
@@ -126,26 +126,37 @@ export default function CalendarHomePage() {
 
   const viewingCurrentMonth = isSameMonth(month, today)
 
-  function monthDirection(from, to) {
-    if (isSameMonth(from, to)) return null
-    return to > from ? 'from-next' : 'from-prev'
+  function transitionToMonth(nextMonth) {
+    const normalized = startOfMonth(nextMonth)
+    if (isSameMonth(month, normalized)) {
+      setMonth(normalized)
+      return
+    }
+
+    setMonthTransition({
+      outgoing: month,
+      dir: normalized > month ? 'next' : 'prev',
+    })
+    setMonth(normalized)
   }
 
+  useEffect(() => {
+    if (!monthTransition) return undefined
+
+    const timer = setTimeout(() => setMonthTransition(null), 460)
+    return () => clearTimeout(timer)
+  }, [monthTransition])
+
   function goToPrevMonth() {
-    setMonthNavDir('from-prev')
-    setMonth((m) => subMonths(m, 1))
+    transitionToMonth(subMonths(month, 1))
   }
 
   function goToNextMonth() {
-    setMonthNavDir('from-next')
-    setMonth((m) => addMonths(m, 1))
+    transitionToMonth(addMonths(month, 1))
   }
 
   function goToToday() {
-    const nextMonth = startOfMonth(today)
-    const dir = monthDirection(month, nextMonth)
-    if (dir) setMonthNavDir(dir)
-    setMonth(nextMonth)
+    transitionToMonth(today)
     setSelected(today)
     setDayFocused(false)
   }
@@ -154,10 +165,7 @@ export default function CalendarHomePage() {
     setSelected(day)
     setDayFocused(true)
     if (!isSameMonth(day, month)) {
-      const nextMonth = startOfMonth(day)
-      const dir = monthDirection(month, nextMonth)
-      if (dir) setMonthNavDir(dir)
-      setMonth(nextMonth)
+      transitionToMonth(day)
     }
   }
 
@@ -175,10 +183,20 @@ export default function CalendarHomePage() {
           </button>
 
           <div className="calendar-month-label" aria-live="polite">
+            {monthTransition && (
+              <div
+                className={`calendar-month-label-inner calendar-month-label-inner--exit-${monthTransition.dir}`}
+                aria-hidden
+              >
+                <h1>{format(monthTransition.outgoing, 'MMMM yyyy')}</h1>
+                <p>{format(selected, 'EEE, MMM d, yyyy')}</p>
+              </div>
+            )}
             <div
               key={format(month, 'yyyy-MM')}
-              className={`calendar-month-label-inner${monthNavDir ? ` calendar-month-label-inner--${monthNavDir}` : ''}`}
-              onAnimationEnd={() => setMonthNavDir(null)}
+              className={`calendar-month-label-inner${
+                monthTransition ? ` calendar-month-label-inner--enter-${monthTransition.dir}` : ''
+              }`}
             >
               <h1>{format(month, 'MMMM yyyy')}</h1>
               <p>{format(selected, 'EEE, MMM d, yyyy')}</p>

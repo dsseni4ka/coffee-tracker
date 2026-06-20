@@ -177,6 +177,14 @@ a {
   min-width: 0;
   text-align: center;
   overflow: hidden;
+  display: grid;
+  align-items: center;
+  min-height: 2.65rem;
+}
+
+.calendar-month-label-inner {
+  grid-area: 1 / 1;
+  width: 100%;
 }
 
 .calendar-month-label-inner h1 {
@@ -198,75 +206,77 @@ a {
   letter-spacing: 0.01em;
 }
 
-.calendar-month-label-inner--from-next h1 {
-  animation: calendar-month-title-in-next 0.36s cubic-bezier(0.22, 1, 0.36, 1) both;
+.calendar-month-label-inner--enter-next {
+  animation: calendar-month-enter-next 0.44s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.calendar-month-label-inner--from-next p {
-  animation: calendar-month-sub-in-next 0.36s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both;
+.calendar-month-label-inner--enter-prev {
+  animation: calendar-month-enter-prev 0.44s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.calendar-month-label-inner--from-prev h1 {
-  animation: calendar-month-title-in-prev 0.36s cubic-bezier(0.22, 1, 0.36, 1) both;
+.calendar-month-label-inner--exit-next {
+  animation: calendar-month-exit-next 0.44s cubic-bezier(0.16, 1, 0.3, 1) both;
+  pointer-events: none;
 }
 
-.calendar-month-label-inner--from-prev p {
-  animation: calendar-month-sub-in-prev 0.36s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both;
+.calendar-month-label-inner--exit-prev {
+  animation: calendar-month-exit-prev 0.44s cubic-bezier(0.16, 1, 0.3, 1) both;
+  pointer-events: none;
 }
 
-@keyframes calendar-month-title-in-next {
+@keyframes calendar-month-enter-next {
   from {
     opacity: 0;
-    transform: translateX(22px);
+    transform: translate3d(36px, 0, 0);
   }
 
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
-@keyframes calendar-month-title-in-prev {
+@keyframes calendar-month-enter-prev {
   from {
     opacity: 0;
-    transform: translateX(-22px);
+    transform: translate3d(-36px, 0, 0);
   }
 
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
-@keyframes calendar-month-sub-in-next {
+@keyframes calendar-month-exit-next {
   from {
-    opacity: 0;
-    transform: translateX(14px);
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
   }
 
   to {
-    opacity: 1;
-    transform: translateX(0);
+    opacity: 0;
+    transform: translate3d(-36px, 0, 0);
   }
 }
 
-@keyframes calendar-month-sub-in-prev {
+@keyframes calendar-month-exit-prev {
   from {
-    opacity: 0;
-    transform: translateX(-14px);
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
   }
 
   to {
-    opacity: 1;
-    transform: translateX(0);
+    opacity: 0;
+    transform: translate3d(36px, 0, 0);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .calendar-month-label-inner--from-next h1,
-  .calendar-month-label-inner--from-next p,
-  .calendar-month-label-inner--from-prev h1,
-  .calendar-month-label-inner--from-prev p {
+  .calendar-month-label-inner--enter-next,
+  .calendar-month-label-inner--enter-prev,
+  .calendar-month-label-inner--exit-next,
+  .calendar-month-label-inner--exit-prev {
     animation: none;
   }
 }
@@ -371,8 +381,8 @@ a {
   height: 16px;
   padding: 0 4px;
   border-radius: var(--radius-full);
-  background: var(--color-tag-bg);
-  color: var(--color-tag-text);
+  background: var(--color-tag-text);
+  color: var(--color-tag-bg);
   font-family: var(--font-mono);
   font-size: 0.58rem;
   font-weight: 600;
@@ -958,7 +968,6 @@ a {
 .app-main--scroll-locked {
   overflow: hidden !important;
   overscroll-behavior: none;
-  touch-action: none;
 }
 
 body.sheet-scroll-locked,
@@ -2196,7 +2205,7 @@ html.sheet-scroll-locked {
   border: none;
   background: transparent;
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: 16px;
   color: var(--color-text);
   min-width: 0;
 }
@@ -2327,7 +2336,7 @@ html.sheet-scroll-locked {
   background: var(--color-surface);
   box-shadow: var(--shadow-card);
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: 16px;
   color: var(--color-text);
 }
 
@@ -3379,6 +3388,19 @@ button.map-favorite-card {
 }
 
 /* Settings sheet */
+.settings-sheet.sheet.sipspend-sheet {
+  background: var(--color-sheet);
+}
+
+.settings-sheet-toolbar {
+  flex-shrink: 0;
+  margin-bottom: var(--space-sm);
+}
+
+.settings-sheet-inner .sipspend-sheet-handle-zone {
+  padding-bottom: 4px;
+}
+
 .settings-sheet-body {
   padding-bottom: calc(var(--space-xl) + var(--safe-bottom));
 }

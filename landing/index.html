@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#FAF8F5" />
+    <meta name="description" content="Track every sip, every spend. SipSpend helps you log drinks, watch your weekly budget, and see where your caffeine habit takes you." />
+    <!-- Set this when the app lives at a different URL than the landing page -->
+    <meta name="coffee-app-url" content="/" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <title>SipSpend — Know what you spend</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./iphone-3d.css" />
+  </head>
+  <body>
+    <div class="landing">
+      <header class="landing-header">
+        <a class="landing-logo" href="./">
+          <span class="landing-logo-mark" aria-hidden="true">
+            <span class="landing-logo-icon"></span>
+          </span>
+          <span class="landing-logo-name">SipSpend</span>
+        </a>
+        <a class="landing-header-cta" id="header-cta" href="/">Open app</a>
+      </header>
+
+      <main>
+        <section class="landing-hero">
+          <div class="landing-hero-copy">
+            <p class="landing-eyebrow">Your weekly coffee budget, finally visible</p>
+            <h1>How much did you spend on coffee this week?</h1>
+            <p class="landing-lead">
+              Log every latte, cappuccino, and cold brew in seconds. See your spending add up,
+              stay on budget, and never wonder where your money went again.
+            </p>
+            <div class="landing-hero-actions">
+              <a class="landing-btn landing-btn--primary" id="hero-cta" href="/">Try it free</a>
+              <a class="landing-btn landing-btn--ghost" href="#try-it">Try on phone</a>
+            </div>
+          </div>
+
+          <div class="landing-hero-visual">
+            <div class="iphone-3d-scene" id="iphone-3d">
+              <div class="iphone-3d-device">
+                <div class="iphone-frame-outer">
+                  <div class="iphone-frame-highlight"></div>
+                  <div class="iphone-frame-bezel">
+                    <div class="iphone-frame-screen-bezel">
+                      <div class="iphone-dynamic-island">
+                        <div class="iphone-dynamic-island-pill">
+                          <div class="iphone-dynamic-island-camera"></div>
+                        </div>
+                      </div>
+                      <div class="iphone-screen">
+                        <div class="iphone-screen-inner">
+                          <img
+                            class="iphone-app-screenshot"
+                            src="/landing/home-screenshot.png"
+                            alt="SipSpend calendar home screen showing weekly spending and drink log"
+                            width="473"
+                            height="1024"
+                            decoding="async"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="iphone-side-btn iphone-side-btn--left iphone-side-btn--action"></div>
+                  <div class="iphone-side-btn iphone-side-btn--left iphone-side-btn--vol-up"></div>
+                  <div class="iphone-side-btn iphone-side-btn--left iphone-side-btn--vol-down"></div>
+                  <div class="iphone-side-btn iphone-side-btn--right iphone-side-btn--power"></div>
+                </div>
+                <div class="iphone-depth-shadow"></div>
+              </div>
+            </div>
+
+            <img class="landing-sticker landing-sticker--1" src="/drink-stickers/flat-white.png" alt="" />
+            <img class="landing-sticker landing-sticker--2" src="/drink-stickers/matcha.png" alt="" />
+            <img class="landing-sticker landing-sticker--3" src="/drink-stickers/iced-latte.png" alt="" />
+          </div>
+        </section>
+
+        <section class="landing-stats" aria-label="Highlights">
+          <div class="landing-stat">
+            <strong>2 sec</strong>
+            <span>to log a drink</span>
+          </div>
+          <div class="landing-stat">
+            <strong>Weekly</strong>
+            <span>budget tracking</span>
+          </div>
+          <div class="landing-stat">
+            <strong>100%</strong>
+            <span>free &amp; private</span>
+          </div>
+        </section>
+
+        <section class="landing-section landing-qr-section" id="try-it">
+          <div class="landing-qr-card">
+            <div class="landing-qr-copy">
+              <h2>Try it on your phone</h2>
+              <p>
+                Scan the QR code to open SipSpend on your phone. Add it to your home screen
+                for the full app experience.
+              </p>
+              <ol class="landing-qr-steps">
+                <li>Scan the code with your camera</li>
+                <li>Open the link in your browser</li>
+                <li>Tap <strong>Share → Add to Home Screen</strong></li>
+              </ol>
+              <p class="landing-qr-url-wrap">
+                Or open directly:
+                <a class="landing-qr-url" id="app-link" href="/">Loading…</a>
+              </p>
+            </div>
+            <div class="landing-qr-visual">
+              <canvas id="qr-canvas" width="240" height="240" aria-label="QR code to open the app"></canvas>
+              <p class="landing-qr-caption">Scan to open</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="landing-cta-band">
+          <h2>Ready to find out?</h2>
+          <p>Start tracking today — your wallet will thank you by Friday.</p>
+          <a class="landing-btn landing-btn--primary landing-btn--large" id="footer-cta" href="/">Open SipSpend</a>
+        </section>
+      </main>
+
+      <footer class="landing-footer">
+        <p>SipSpend · Personal project · 2026</p>
+      </footer>
+    </div>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

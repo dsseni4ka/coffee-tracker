@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { DRINK_STICKER_OPTIONS, PRICE_RULER } from '../../data/sipSpendDrinks'
 import { useCustomDrinkStickers } from '../../hooks/useCustomDrinkStickers'
 import { formatPrice } from '../../utils/format'
@@ -7,19 +7,24 @@ import TallyAmount from './TallyAmount'
 import PriceRuler from './PriceRuler'
 
 const { start: START_PRICE, end: END_PRICE } = PRICE_RULER
+const IS_TOUCH_DEVICE =
+  typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
+
+function scrollInputIntoView(input) {
+  window.setTimeout(() => {
+    input.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  }, 320)
+}
 
 export default function CustomDrinkPanel({ onBack, onSave }) {
   const [name, setName] = useState('')
   const [price, setPrice] = useState(4.5)
   const [sticker, setSticker] = useState(DRINK_STICKER_OPTIONS[0].src)
+  const [editingStickers, setEditingStickers] = useState(false)
   const rulerRef = useRef(null)
   const stickerFileRef = useRef(null)
-  const { customStickers, addCustomSticker } = useCustomDrinkStickers()
-
-  const stickerOptions = useMemo(
-    () => [...DRINK_STICKER_OPTIONS, ...customStickers],
-    [customStickers],
-  )
+  const nameInputRef = useRef(null)
+  const { visibleStickers, addCustomSticker, removeSticker } = useCustomDrinkStickers()
 
   const trimmedName = name.trim()
   const canSave = trimmedName.length > 0 && price >= START_PRICE && price <= END_PRICE
@@ -48,6 +53,27 @@ export default function CustomDrinkPanel({ onBack, onSave }) {
     }
   }
 
+  function handleRemoveSticker(option) {
+    if (visibleStickers.length <= 1) return
+
+    const fallback = visibleStickers.find((item) => item.id !== option.id)
+    removeSticker(option)
+
+    if (sticker === option.src && fallback) {
+      setSticker(fallback.src)
+    }
+  }
+
+  function toggleStickerEdit() {
+    setEditingStickers((value) => !value)
+  }
+
+  useEffect(() => {
+    if (IS_TOUCH_DEVICE || !nameInputRef.current) return undefined
+    nameInputRef.current.focus()
+    return undefined
+  }, [])
+
   return (
     <>
       <header className="sheet-toolbar sipspend-subview-toolbar">
@@ -63,17 +89,30 @@ export default function CustomDrinkPanel({ onBack, onSave }) {
           Name
         </label>
         <input
+          ref={nameInputRef}
           id="custom-drink-name"
           type="text"
           className="add-coffee-pill-input sipspend-custom-name-input"
           placeholder="e.g. Oat Flat White"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          onFocus={(e) => scrollInputIntoView(e.currentTarget)}
           maxLength={32}
-          autoFocus
+          enterKeyHint="done"
+          autoComplete="off"
         />
 
-        <label className="add-coffee-field-label">Pick a sticker</label>
+        <div className="sipspend-sticker-picker-header">
+          <label className="add-coffee-field-label sipspend-sticker-picker-label">Pick a sticker</label>
+          <button
+            type="button"
+            className={`sipspend-sticker-picker-edit${editingStickers ? ' sipspend-sticker-picker-edit--active' : ''}`}
+            onClick={toggleStickerEdit}
+            aria-pressed={editingStickers}
+          >
+            {editingStickers ? 'Done' : 'Edit'}
+          </button>
+        </div>
         <input
           ref={stickerFileRef}
           type="file"
@@ -81,18 +120,39 @@ export default function CustomDrinkPanel({ onBack, onSave }) {
           onChange={handleStickerUpload}
           hidden
         />
-        <div className="sipspend-sticker-picker" role="listbox" aria-label="Drink sticker">
-          {stickerOptions.map((option) => (
-            <button
-              key={option.id}
-              type="button"
-              role="option"
-              aria-selected={sticker === option.src}
-              className={`sipspend-sticker-option${sticker === option.src ? ' selected' : ''}`}
-              onClick={() => setSticker(option.src)}
-            >
-              <CupStickerImage src={option.src} alt={option.label} />
-            </button>
+        <div
+          className={`sipspend-sticker-picker${editingStickers ? ' sipspend-sticker-picker--editing' : ''}`}
+          role="listbox"
+          aria-label="Drink sticker"
+        >
+          {visibleStickers.map((option) => (
+            <div key={option.id} className="sipspend-sticker-option-wrap">
+              <button
+                type="button"
+                role="option"
+                aria-selected={sticker === option.src}
+                className={`sipspend-sticker-option${sticker === option.src ? ' selected' : ''}`}
+                onClick={() => {
+                  if (!editingStickers) setSticker(option.src)
+                }}
+                disabled={editingStickers}
+              >
+                <CupStickerImage src={option.src} alt={option.label} />
+              </button>
+              {editingStickers && (
+                <button
+                  type="button"
+                  className="sipspend-sticker-option-remove"
+                  onClick={() => handleRemoveSticker(option)}
+                  disabled={visibleStickers.length <= 1}
+                  aria-label={`Remove ${option.label} sticker`}
+                >
+                  <svg fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M18 6L6 18" />
+                  </svg>
+                </button>
+              )}
+            </div>
           ))}
           <button
             type="button"

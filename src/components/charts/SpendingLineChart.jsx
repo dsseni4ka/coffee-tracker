@@ -69,8 +69,8 @@ export default function SpendingLineChart({ data = [], budgetLimit, emptyLabel =
     <svg viewBox={`0 0 ${W} ${H}`} className="budget-line-chart" role="img" aria-label="Spending trend">
       <defs>
         <linearGradient id="budget-line-gradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="var(--color-accent)" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="var(--color-accent)" stopOpacity="0.02" />
+          <stop offset="0%" stopColor="var(--color-budget-chart)" stopOpacity="0.35" />
+          <stop offset="100%" stopColor="var(--color-budget-chart)" stopOpacity="0.02" />
         </linearGradient>
       </defs>
 

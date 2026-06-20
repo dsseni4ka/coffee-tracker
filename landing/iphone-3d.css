@@ -1,0 +1,209 @@
+/*
+ * 3D iPhone mockup — adapted from Styly IO's CSS-only component (MIT License)
+ * https://github.com/tercumantanumut/phone3d-css-styly-io
+ */
+
+.landing-hero-visual {
+  --iphone-scale: 0.78;
+}
+
+@media (max-width: 859px) {
+  .landing-hero-visual {
+    --iphone-scale: 0.68;
+  }
+}
+
+.iphone-3d-scene {
+  position: relative;
+  perspective: 1200px;
+  perspective-origin: 50% 50%;
+  width: calc(360px * var(--iphone-scale));
+  height: calc(800px * var(--iphone-scale));
+  user-select: none;
+  touch-action: none;
+  cursor: grab;
+}
+
+.iphone-3d-scene.is-dragging {
+  cursor: grabbing;
+}
+
+.iphone-3d-device {
+  position: relative;
+  width: 360px;
+  height: 800px;
+  transform-style: preserve-3d;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.iphone-frame-outer {
+  position: relative;
+  padding: 12px;
+  border-radius: 52px;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+  box-shadow:
+    0 60px 120px -20px rgba(0, 0, 0, 0.6),
+    0 30px 60px -30px rgba(0, 0, 0, 0.5);
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.iphone-frame-highlight {
+  position: absolute;
+  inset: 0;
+  border-radius: 52px;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    rgba(255, 255, 255, 0.25) 0%,
+    rgba(255, 255, 255, 0.05) 20%,
+    transparent 40%,
+    transparent 60%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
+}
+
+.iphone-frame-bezel {
+  position: relative;
+  padding: 3px;
+  border-radius: 42px;
+  background: linear-gradient(135deg, #252525 0%, #1f1f1f 100%);
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.iphone-frame-screen-bezel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 40px;
+  background: #0a0a0a;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.iphone-dynamic-island {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  padding-top: 10px;
+  pointer-events: none;
+}
+
+.iphone-dynamic-island-pill {
+  position: relative;
+  width: 120px;
+  height: 34px;
+  border-radius: 999px;
+  background: #000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.iphone-dynamic-island-camera {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 11px;
+  height: 11px;
+  margin-left: 30px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a1a2e 0%, #0a0a12 100%);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.iphone-dynamic-island-camera::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1e3a5f 0%, #0d1f2d 100%);
+}
+
+.iphone-screen {
+  position: relative;
+  height: 700px;
+  border-radius: 38px;
+  overflow: hidden;
+  background: var(--color-bg);
+  transform: translateZ(4px);
+  backface-visibility: hidden;
+  touch-action: manipulation;
+  pointer-events: auto;
+}
+
+.iphone-screen-inner {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+.iphone-app-screenshot {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Crop the screenshot's status bar — mockup Dynamic Island sits on top */
+  object-position: 50% 7%;
+  background: var(--color-bg);
+  pointer-events: none;
+  user-select: none;
+}
+
+.iphone-side-btn {
+  position: absolute;
+  width: 4px;
+  background: linear-gradient(90deg, #2a2a2a 0%, #1a1a1a 100%);
+}
+
+.iphone-side-btn--left {
+  left: -3px;
+  border-radius: 2px 0 0 2px;
+  box-shadow: -1px 0 2px rgba(0, 0, 0, 0.3);
+}
+
+.iphone-side-btn--right {
+  right: -3px;
+  border-radius: 0 2px 2px 0;
+  background: linear-gradient(270deg, #2a2a2a 0%, #1a1a1a 100%);
+  box-shadow: 1px 0 2px rgba(0, 0, 0, 0.3);
+}
+
+.iphone-side-btn--action {
+  top: 120px;
+  height: 30px;
+}
+
+.iphone-side-btn--vol-up {
+  top: 160px;
+  height: 55px;
+}
+
+.iphone-side-btn--vol-down {
+  top: 225px;
+  height: 55px;
+}
+
+.iphone-side-btn--power {
+  top: 170px;
+  height: 80px;
+}
+
+.iphone-depth-shadow {
+  position: absolute;
+  inset: 0;
+  border-radius: 52px;
+  z-index: -1;
+  transform: translateZ(-10px) translateX(5px) translateY(3px);
+  background: rgba(0, 0, 0, 0.15);
+  filter: blur(15px);
+  pointer-events: none;
+}

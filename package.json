@@ -5,14 +5,18 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:landing": "vite --open /landing/",
     "build": "vite build",
+    "build:landing": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "preview:landing": "vite preview --open /landing/"
   },
   "dependencies": {
     "date-fns": "^4.4.0",
     "dexie": "^4.4.4",
     "leaflet": "^1.9.4",
+    "qrcode": "^1.5.4",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-leaflet": "^5.0.0",

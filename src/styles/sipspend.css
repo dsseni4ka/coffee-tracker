@@ -31,7 +31,6 @@
 .sipspend-sheet-overlay {
   opacity: 0;
   transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-  touch-action: none;
 }
 
 .sipspend-sheet-overlay--visible {
@@ -303,14 +302,14 @@
   width: var(--cup-card-width, 95px);
   height: var(--cup-card-width, 95px);
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
   flex-shrink: 0;
   --scroll-rotate: 0deg;
   --scroll-y: 0px;
-  transform: translateY(var(--scroll-y)) rotate(var(--scroll-rotate));
+  transform: translateY(var(--scroll-y));
   transition: transform 0.42s cubic-bezier(0.34, 1.45, 0.64, 1);
-  transform-origin: center bottom;
+  transform-origin: center center;
 }
 
 .sipspend-cup-wrap.cup-scroll-settle .sipspend-drink-sticker {
@@ -321,11 +320,13 @@
   0%, 100% {
     transform: translateY(0) scale(1);
   }
+
   40% {
-    transform: translateY(-6px) scale(1.04) rotate(-1.5deg);
+    transform: translateY(-4px) scale(1.03);
   }
+
   70% {
-    transform: translateY(-2px) scale(1.01) rotate(0.75deg);
+    transform: translateY(-1px) scale(1.01);
   }
 }
 
@@ -351,7 +352,7 @@
   height: 82px;
   margin: 0;
   object-fit: contain;
-  object-position: center bottom;
+  object-position: center center;
   filter: drop-shadow(0 8px 10px rgba(44, 37, 32, 0.2));
   transform: translateY(0);
   transition:
@@ -1466,7 +1467,7 @@
 }
 
 .sipspend-location-search .add-coffee-row-card input {
-  font-size: 0.85rem;
+  font-size: 16px;
   font-family: 'Inter', var(--font-sans);
 }
 
@@ -1575,11 +1576,83 @@
   box-sizing: border-box;
 }
 
+.sipspend-sticker-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin: var(--space-md) 0 var(--space-sm);
+}
+
+.sipspend-sticker-picker-label {
+  margin: 0;
+}
+
+.sipspend-sticker-picker-edit {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.sipspend-sticker-picker-edit--active {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+  color: var(--color-accent-muted);
+}
+
 .sipspend-sticker-picker {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
   margin-bottom: var(--space-sm);
+}
+
+.sipspend-sticker-option-wrap {
+  position: relative;
+  min-width: 0;
+}
+
+.sipspend-sticker-picker--editing .sipspend-sticker-option:disabled {
+  opacity: 0.72;
+  cursor: default;
+}
+
+.sipspend-sticker-option-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 2px solid var(--color-surface);
+  border-radius: var(--radius-full);
+  background: var(--color-danger);
+  color: var(--color-on-accent);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(44, 37, 32, 0.18);
+}
+
+.sipspend-sticker-option-remove svg {
+  width: 12px;
+  height: 12px;
+}
+
+.sipspend-sticker-option-remove:disabled {
+  opacity: 0.35;
+  cursor: default;
 }
 
 .sipspend-sticker-option {

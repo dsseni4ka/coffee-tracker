@@ -284,8 +284,8 @@ export default function QuickLogSheet({
       const cardCenterX = cardRect.left + cardRect.width / 2
       const offset = (cardCenterX - centerX) / (carouselRect.width * 0.5)
       const clamped = Math.max(-1.15, Math.min(1.15, offset))
-      const rotate = clamped * 4.5
-      const translateY = Math.abs(clamped) * 6
+      const rotate = 0
+      const translateY = 0
       const wrap = card.querySelector('.sipspend-cup-wrap')
 
       card.style.setProperty('--card-scale', scale.toFixed(3))

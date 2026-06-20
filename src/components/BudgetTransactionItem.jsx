@@ -1,12 +1,9 @@
-import { formatDistanceToNow } from 'date-fns'
 import { getDrinkType } from '../data/drinkTypes'
 import { getDrinkStickerSrc, SIP_SPEND_DRINKS } from '../data/sipSpendDrinks'
-import { formatPrice } from '../utils/format'
+import { formatPrice, formatRelativeTime } from '../utils/format'
 
 function formatLogTime(timestamp) {
-  const diff = Date.now() - timestamp
-  if (diff < 60_000) return 'Just now'
-  return formatDistanceToNow(timestamp, { addSuffix: true })
+  return formatRelativeTime(timestamp)
 }
 
 function drinkLabel(drink) {

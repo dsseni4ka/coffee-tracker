@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { formatDistanceToNow } from 'date-fns'
+import { formatRelativeTime } from '../utils/format'
 import { addPost, getPosts } from '../db/database'
 
 import PageHeader from '../components/PageHeader'
@@ -104,7 +104,7 @@ export default function FeedPage() {
             {post.photo && <img src={post.photo} alt="" />}
             {post.caption && <p className="feed-post-caption">{post.caption}</p>}
             <p className="feed-post-time">
-              {formatDistanceToNow(new Date(post.timestamp), { addSuffix: true })}
+              {formatRelativeTime(post.timestamp)}
             </p>
           </article>
         ))

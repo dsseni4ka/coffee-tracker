@@ -1,4 +1,5 @@
 import os from 'node:os'
+import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -32,16 +33,24 @@ export default defineConfig({
   preview: {
     host: true,
   },
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        landing: resolve(__dirname, 'landing/index.html'),
+      },
+    },
+  },
   plugins: [
     phoneDevLink(),
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      includeAssets: ['favicon.svg', 'sipspend-icon.svg'],
       manifest: {
-        name: 'Coffee Tracker',
-        short_name: 'Coffee',
-        description: 'Track coffee habits and caffeine intake',
+        name: 'SipSpend',
+        short_name: 'SipSpend',
+        description: 'Track every sip, every spend — log drinks and watch your weekly budget',
         theme_color: '#F9F8F3',
         background_color: '#F6F4F1',
         display: 'standalone',

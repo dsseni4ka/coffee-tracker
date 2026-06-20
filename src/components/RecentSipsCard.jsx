@@ -1,15 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { formatDistanceToNow, startOfWeek } from 'date-fns'
+import { startOfWeek } from 'date-fns'
 import { WEEK_OPTIONS } from '../utils/calendarWeek'
 import { getDrinkStickerSrc, SIP_SPEND_DRINKS } from '../data/sipSpendDrinks'
-import { formatPrice } from '../utils/format'
+import { formatPrice, formatRelativeTime } from '../utils/format'
 import { getDrinksSince } from '../db/database'
 import '../styles/sipspend.css'
 
 function formatLogTime(timestamp) {
-  const diff = Date.now() - timestamp
-  if (diff < 60_000) return 'Just now'
-  return formatDistanceToNow(timestamp, { addSuffix: true })
+  return formatRelativeTime(timestamp)
 }
 
 function drinkLabel(drink) {
